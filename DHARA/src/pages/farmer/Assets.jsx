@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { assetsAPI, bookingsAPI } from '../../services/api';
-import { Search, MapPin, Filter, X } from 'lucide-react';
+import { Search, MapPin, Filter, X, Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Assets = () => {
@@ -93,13 +93,16 @@ const Assets = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{asset.name}</h3>
+                  <p className="text-xs text-green-700 font-medium mb-1 flex items-center gap-1">
+                    <UserIcon size={12} /> {asset.operatorName || 'Listed by Operator'}
+                  </p>
                   <p className="text-gray-500 text-sm flex items-center gap-1">
                     <MapPin size={14} /> {asset.location || 'N/A'}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-green-600 font-bold text-lg">₹{asset.hourlyRate}</p>
-                  <p className="text-xs text-gray-400">/ day</p>
+                  <p className="text-xs text-gray-400">/ hr</p>
                 </div>
               </div>
 
@@ -213,7 +216,6 @@ const BookingModal = ({ asset, onClose }) => {
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg flex justify-between items-center text-sm">
-            <span className="text-gray-600">Price per day:</span>
             <span className="font-bold text-lg text-green-700">₹{asset.hourlyRate}</span>
           </div>
 

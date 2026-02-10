@@ -13,7 +13,8 @@ function toApiAsset(asset) {
     type: asset.type,
     description: '', // not in dharaa schema
     hourlyRate: Number(asset.priceperday) || 0,
-    isAvailable: asset.availability ?? true,
+    availability: asset.availability ?? true,
+    location: asset.User ? `${asset.User.village || ''}, ${asset.User.district || ''}`.replace(/^, |, $/, '') : 'Local Area',
     createdAt: asset.createdat?.toISOString?.() ?? asset.createdat,
   };
 }
@@ -27,12 +28,16 @@ async function createAsset({ operatorId, name, type, description, hourlyRate }) 
       priceperday: Number(hourlyRate) || 0,
       availability: true,
     },
+    include: { User: true }
   });
   return toApiAsset(asset);
 }
 
 async function findById(id) {
-  const asset = await prisma.asset.findUnique({ where: { id } });
+  const asset = await prisma.asset.findUnique({
+    where: { id },
+    include: { User: true }
+  });
   return toApiAsset(asset);
 }
 
@@ -40,12 +45,17 @@ async function listAll(filters = {}) {
   const where = {};
   if (filters.operatorId) where.ownerid = filters.operatorId;
   if (filters.type) where.type = filters.type;
-  const assets = await prisma.asset.findMany({ where });
+  const assets = await prisma.asset.findMany({
+    where,
+    include: { User: true, Booking: true }
+  });
   return assets.map(toApiAsset);
 }
 
 async function listAllForAdmin() {
-  const assets = await prisma.asset.findMany();
+  const assets = await prisma.asset.findMany({
+    include: { User: true }
+  });
   return assets.map(toApiAsset);
 }
 

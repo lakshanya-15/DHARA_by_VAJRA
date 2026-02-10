@@ -39,4 +39,9 @@ export const bookingsAPI = {
   getMyBookings: () => api.get('/bookings/my'),
 };
 
+export const notificationsAPI = {
+  getAll: () => api.get('/notifications'),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+};
+
 export default api;

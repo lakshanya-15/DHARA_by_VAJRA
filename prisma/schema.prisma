@@ -47,6 +47,17 @@ model User {
   createdat DateTime? @default(now()) @db.Timestamp(6)
   Asset     Asset[]
   Booking   Booking[]
+  Notification Notification[]
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userid    String    @db.Uuid
+  message   String
+  type      String?   @default("INFO")
+  isread    Boolean?  @default(false)
+  createdat DateTime? @default(now()) @db.Timestamp(6)
+  User      User      @relation(fields: [userid], references: [id], onUpdate: NoAction, map: "fk_notification_user")
 }
 
 enum booking_status {

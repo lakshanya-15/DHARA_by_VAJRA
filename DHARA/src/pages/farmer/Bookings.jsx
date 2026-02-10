@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../services/api';
-import { Calendar, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -43,6 +43,9 @@ const Bookings = () => {
 
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">{booking.Asset?.name || 'Unknown Asset'}</h3>
+                <p className="text-sm text-green-700 font-medium flex items-center gap-1 mt-1">
+                  <UserIcon size={14} /> Renting from: {booking.Asset?.operatorName || 'Operator'}
+                </p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
                     <Calendar size={14} /> {new Date(booking.bookingdate).toLocaleDateString()}

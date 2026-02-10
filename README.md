@@ -132,9 +132,3 @@ VISIT **[http://localhost:5173](http://localhost:5173)** to use the app!
 | `POST` | `/assets` | Create a new asset | **Operator** |
 | `POST` | `/bookings` | Book an asset | **Farmer** |
 | `GET` | `/bookings/my` | View my bookings | **User** |
-
----
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) (if available) or follow standard Pull Request workflow.
