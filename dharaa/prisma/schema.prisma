@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Asset {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String
+  type         String
+  priceperday  Decimal   @db.Decimal(10, 2)
+  availability Boolean?  @default(true)
+  ownerid      String    @db.Uuid
+  createdat    DateTime? @default(now()) @db.Timestamp(6)
+  User         User      @relation(fields: [ownerid], references: [id], onUpdate: NoAction, map: "fk_asset_owner")
+  Booking      Booking[]
+}
+
+model Booking {
+  id          String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  bookingdate DateTime       @db.Date
+  status      booking_status
+  farmerid    String         @db.Uuid
+  assetid     String         @db.Uuid
+  createdat   DateTime?      @default(now()) @db.Timestamp(6)
+  Asset       Asset          @relation(fields: [assetid], references: [id], onUpdate: NoAction, map: "fk_booking_asset")
+  User        User           @relation(fields: [farmerid], references: [id], onUpdate: NoAction, map: "fk_booking_farmer")
+
+  @@unique([assetid, bookingdate], map: "unique_asset_booking_date")
+}
+
+model User {
+  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String
+  email     String    @unique
+  password  String
+  role      user_role
+  village   String?
+  district  String?
+  state     String?
+  createdat DateTime? @default(now()) @db.Timestamp(6)
+  Asset     Asset[]
+  Booking   Booking[]
+}
+
+enum booking_status {
+  BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+enum user_role {
+  FARMER
+  OPERATOR
+  ADMIN
+}
