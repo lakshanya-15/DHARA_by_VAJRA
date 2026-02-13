@@ -15,4 +15,10 @@ router.get('', assetController.list);
 // POST /assets - OPERATOR only
 router.post('/', auth, requireRole(['OPERATOR']), assetController.create);
 
+// PATCH /assets/:id - OPERATOR only
+router.patch('/:id', auth, requireRole(['OPERATOR']), assetController.update);
+
+// DELETE /assets/:id - OPERATOR only
+router.delete('/:id', auth, requireRole(['OPERATOR']), assetController.remove);
+
 module.exports = router;

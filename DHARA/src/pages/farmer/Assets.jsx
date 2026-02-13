@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { assetsAPI, bookingsAPI } from '../../services/api';
 import { Search, MapPin, Filter, X, Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const Assets = () => {
+  const { t } = useTranslation();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [radius, setRadius] = useState(25);
   const [selectedAsset, setSelectedAsset] = useState(null); // For Booking Modal
 
   useEffect(() => {
@@ -30,14 +32,33 @@ const Assets = () => {
   const filteredAssets = assets.filter((asset) => {
     const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (asset.location && asset.location.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesType = selectedType === 'All' || asset.type === selectedType;
-    return matchesSearch && matchesType;
+    const matchesCategory = selectedCategory === 'All' || asset.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
-  const types = ['All', ...new Set(assets.map(a => a.type))];
+  const categories = [
+    { id: 'All', name: t('farmer.allCategories') },
+    { id: 'SOIL_PREPARATION', name: t('operator.soilPrep') },
+    { id: 'SOWING', name: t('operator.sowing') },
+    { id: 'PLANT_PROTECTION', name: t('operator.protection') },
+    { id: 'HARVESTING', name: t('operator.harvesting') },
+    { id: 'TRANSPORTATION', name: t('operator.transport') }
+  ];
+
+
+  const getAssetImage = (type) => {
+    const assetImages = {
+      'Tractor': '/dhara_logo.png',
+      'Drone': '/assets/images/drone.png',
+      'Harvester': '/assets/images/harvester.png',
+      'JCB/Excavator': '/assets/images/jcb.png',
+      'JCB': '/assets/images/jcb.png',
+    };
+    return assetImages[type] || '/dhara_logo.png';
+  };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64 text-green-600">Loading assets...</div>;
+    return <div className="flex justify-center items-center h-64 text-green-600">{t('common.loading')}</div>;
   }
 
   if (error) {
@@ -48,14 +69,14 @@ const Assets = () => {
     <div className="space-y-6">
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-800">Available Assets</h2>
+        <h2 className="text-2xl font-bold text-gray-800">{t('farmer.machineryMarket')}</h2>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search tractors, location..."
+              placeholder={t('farmer.searchMachinery')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none w-full sm:w-64"
@@ -63,12 +84,21 @@ const Assets = () => {
           </div>
 
           <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white cursor-pointer"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white cursor-pointer text-sm font-medium"
           >
-            {types.map(t => <option key={t} value={t}>{t}</option>)}
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+
+          <div className="flex items-center gap-3 px-4 py-2 border border-gray-100 bg-gray-50 rounded-lg">
+            <span className="text-xs font-bold text-gray-500 uppercase whitespace-nowrap">{t('farmer.radius', { radius })}</span>
+            <input
+              type="range" min="5" max="100" step="5"
+              value={radius} onChange={(e) => setRadius(e.target.value)}
+              className="accent-green-600 h-1.5 w-24"
+            />
+          </div>
         </div>
       </div>
 
@@ -78,14 +108,14 @@ const Assets = () => {
           <div key={asset.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden flex flex-col">
             <div className="h-48 bg-green-50 p-6 flex items-center justify-center relative">
               {/* Availability Badge */}
-              <span className={`absolute top-3 right-3 px-2 py-1 text-xs font-bold rounded-full 
+              <span className={`absolute top-3 right-3 px-2 py-1 text-xs font-bold rounded-full z-10 shadow-sm
                  ${asset.availability ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {asset.availability ? 'AVAILABLE' : 'BOOKED'}
+                {asset.availability ? t('operator.active').toUpperCase() : t('operator.reserved').toUpperCase()}
               </span>
               <img
-                src={asset.image || 'https://cdn-icons-png.flaticon.com/512/2675/2675869.png'} // Fallback image 
+                src={asset.image || getAssetImage(asset.type)}
                 alt={asset.name}
-                className="h-full object-contain hover:scale-110 transition-transform duration-300 drop-shadow-sm"
+                className="h-full w-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
 
@@ -94,7 +124,7 @@ const Assets = () => {
                 <div>
                   <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{asset.name}</h3>
                   <p className="text-xs text-green-700 font-medium mb-1 flex items-center gap-1">
-                    <UserIcon size={12} /> {asset.operatorName || 'Listed by Operator'}
+                    <UserIcon size={12} /> {asset.operatorName || t('farmer.localRegion')}
                   </p>
                   <p className="text-gray-500 text-sm flex items-center gap-1">
                     <MapPin size={14} /> {asset.location || 'N/A'}
@@ -102,7 +132,7 @@ const Assets = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-green-600 font-bold text-lg">₹{asset.hourlyRate}</p>
-                  <p className="text-xs text-gray-400">/ hr</p>
+                  <p className="text-xs text-gray-400">/ {t('operator.perHour')}</p>
                 </div>
               </div>
 
@@ -115,7 +145,7 @@ const Assets = () => {
                       ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                 >
-                  {asset.availability ? 'Book Now' : 'Unavailable'}
+                  {asset.availability ? t('farmer.reserveMachinery') : t('farmer.unavailable')}
                 </button>
               </div>
             </div>
@@ -124,7 +154,7 @@ const Assets = () => {
 
         {filteredAssets.length === 0 && (
           <div className="col-span-full py-12 text-center text-gray-400">
-            <p>No assets found matching your criteria.</p>
+            <p>{t('farmer.noMatches')}</p>
           </div>
         )}
       </div>
@@ -138,7 +168,9 @@ const Assets = () => {
 };
 
 const BookingModal = ({ asset, onClose }) => {
+  const { t } = useTranslation();
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('09:00');
   // const [hours, setHours] = useState(4); // Removed hours as price is per day in DB schema
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -158,12 +190,13 @@ const BookingModal = ({ asset, onClose }) => {
       // Create booking
       await bookingsAPI.create({
         assetId: asset.id,
-        startDate: date
+        startDate: date,
+        bookingTime: time
       });
       setIsSuccess(true);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || "Booking failed");
+      setError(err.response?.data?.error || t('farmer.reserveMachineModal.bookingFailed'));
     } finally {
       setLoading(false);
     }
@@ -178,15 +211,15 @@ const BookingModal = ({ asset, onClose }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Booking Confirmed!</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t('farmer.reserveMachineModal.successTitle')}</h3>
           <p className="text-gray-500 mb-6">
-            You have successfully booked <strong>{asset.name}</strong>.
+            {t('farmer.reserveMachineModal.successText')}
           </p>
           <button
             onClick={onClose}
             className="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700"
           >
-            Done
+            {t('common.confirm')}
           </button>
         </div>
       </div>
@@ -200,17 +233,28 @@ const BookingModal = ({ asset, onClose }) => {
           <X size={24} />
         </button>
 
-        <h3 className="text-xl font-bold text-gray-900 mb-6">Book {asset.name}</h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-6">{t('farmer.reserveMachineModal.title')}</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('farmer.reserveMachineModal.selectedDate')}</label>
             <input
               type="date"
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('farmer.reserveMachineModal.preferredTime')}</label>
+            <input
+              type="time"
+              required
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
             />
           </div>
@@ -224,7 +268,7 @@ const BookingModal = ({ asset, onClose }) => {
             disabled={loading}
             className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 shadow-md mt-2 disabled:bg-gray-400"
           >
-            {loading ? 'Processing...' : 'Confirm Booking'}
+            {loading ? t('farmer.reserveMachineModal.transmitting') : t('farmer.reserveMachineModal.confirm')}
           </button>
         </form>
       </div>

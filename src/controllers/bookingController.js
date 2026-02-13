@@ -18,6 +18,7 @@ async function create(req, res, next) {
       farmerId: req.user.id,
       assetId: req.body.assetId,
       startDate: req.body.startDate,
+      bookingTime: req.body.bookingTime,
       endDate: req.body.endDate,
       notes: req.body.notes,
     });

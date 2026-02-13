@@ -1,134 +1,92 @@
-# Rural Uber (DHARA) 🚜
+# DHARA: Advanced Agriculture-as-a-Service Platform 🚜
 
-A full-stack web platform connecting farmers with local machine operators. Farmers can rent agricultural assets (tractors, harvesters, etc.) from verified operators in their vicinity.
+DHARA (Dharaa) is a premium, full-stack ecosystem designed to bridge the gap between rural farmers and machinery operators. It provides a seamless, transparent, and data-driven marketplace for agricultural asset management and scheduling.
 
-## 🚀 Features
+## 🚀 Core Capabilities
 
--   **Role-Based Access**: Specialized dashboards for **Farmers**, **Operators**, and **Admins**.
--   **Authentication**: Secure JWT-based login and registration.
--   **Asset Management**: Operators can list assets with details (type, rate, location, image).
--   **Booking System**: Farmers can browse available assets and book them for specific dates.
--   **Real-time Availability**: Assets show "Booked" or "Available" status based on database records.
--   **Responsive Design**: Built with React and Tailwind CSS for a modern, mobile-friendly UI.
+-   **Intelligent Pricing Engine**: A sophisticated algorithm that calculates fair market rates based on machine depreciation, legal overheads, operator wages, and real-time profit margins.
+-   **Fleet Analytics & Insights**: Interactive data visualization using `recharts` for operators to track revenue trends and resource utilization.
+-   **Automated Maintenance Ecosystem**: Built-in verification logging for every asset to ensure operational readiness and reliability.
+-   **Role-Specific Dashboards**: Custom-tailored experiences for **Farmers** (Booking & Scheduling), **Operators** (Asset & Financial Management), and **Admins** (Platform Oversight).
+-   **Real-Time Synchronization**: Instant status updates across the platform, ensuring zero schedule collisions and accurate availability.
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-### Frontend (`/DHARA`)
--   **Framework**: React (Vite)
--   **Styling**: Tailwind CSS, Lucide React (Icons)
--   **State Management**: React Context API
--   **HTTP Client**: Axios
+### Backend Infrastructure
+-   **Runtime**: Node.js & Express.js
+-   **Database**: PostgreSQL (Relational Data Management)
+-   **ORM**: Prisma (Type-safe Database Access)
+-   **Security**: JWT-based Authentication & Bcrypt Hashing
+-   **Lifecycle Management**: Automated status refreshing and notification services.
 
-### Backend (`/`)
--   **Runtime**: Node.js
--   **Framework**: Express.js
--   **Database**: PostgreSQL
--   **ORM**: Prisma
--   **Auth**: JSON Web Tokens (JWT) & Bcrypt
+### Frontend Experience
+-   **Framework**: React (Vite-powered)
+-   **Visualization**: Recharts (Dynamic Data Graphs)
+-   **Localization**: i18next (Multi-language support for rural accessibility)
+-   **Styling**: Premium UI built with Tailwind CSS and Lucide Icons.
 
 ---
 
-## ⚙️ Setup & Installation
+## ⚙️ Deployment & Setup
 
-Follow these steps to get the project running locally.
-
-### 1. Prerequisites
--   Node.js (v16+)
--   PostgreSQL installed and running
--   Git
-
-### 2. Clone the Repository
+### 1. Repository Initialization
 ```bash
-git clone <your-repo-url>
-cd rural-uber-farm-assets
+git clone <repository-url>
+cd project1
 ```
 
-### 3. Backend Setup (Root)
-1.  Install dependencies:
+### 2. Backend Orchestration
+1.  **Dependencies**:
     ```bash
     npm install
     ```
-2.  Configure Environment Variables:
-    Create a `.env` file in the root directory:
-    ```env
-    PORT=3000
-    DATABASE_URL="postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/dhara"
-    JWT_SECRET="your_super_secret_key_change_this"
-    CORS_ORIGIN=http://localhost:5173
-    ```
-3.  Setup Database:
+2.  **Environment Configuration**:
+    Configure your `.env` with `DATABASE_URL`, `JWT_SECRET`, and `CORS_ORIGIN`.
+3.  **Database Synchronization**:
     ```bash
     npx prisma generate
     npx prisma db push
     ```
 
-### 4. Frontend Setup (DHARA)
-1.  Navigate to frontend folder:
+### 3. Frontend Orchestration
+1.  **Initialization**:
     ```bash
     cd DHARA
-    ```
-2.  Install dependencies:
-    ```bash
     npm install
     ```
-3.  Configure Environment:
-    Create a `.env` file in `DHARA/`:
-    ```env
-    VITE_API_URL=http://localhost:3000
-    ```
+2.  **API Integration**:
+    Configure `VITE_API_URL` in `DHARA/.env`.
 
 ---
 
-## 🏃‍♂️ Running the App
+## 🏃‍♂️ Operational Guide
 
-You need to run both the backend and frontend servers.
+The system operates as a distributed architecture requiring both services to be active.
 
-**Terminal 1 (Backend):**
+**Backend Service:**
 ```bash
-# In the root folder
-npm start
-# Server runs at http://localhost:3000
+npm start # Root directory
 ```
 
-**Terminal 2 (Frontend):**
+**Frontend Experience:**
 ```bash
-# In the DHARA folder
-npm run dev
-# App runs at http://localhost:5173
+npm run dev # DHARA directory
 ```
-
-VISIT **[http://localhost:5173](http://localhost:5173)** to use the app!
 
 ---
 
-## 📂 Project Structure
+## 📂 Architecture Overview
 
 ```
-├── DHARA/                  # Frontend (React + Vite)
+├── DHARA/                  # Frontend Application
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── context/        # Auth Context
-│   │   ├── pages/          # Full pages (Login, Dashboard, Assets)
-│   │   └── services/       # API integration
-│   └── ...
-├── src/                    # Backend (Node + Express)
-│   ├── controllers/        # Request logic
-│   ├── middlewares/        # Auth & Validation
-│   ├── routes/             # API Endpoints
-│   ├── services/           # DB logic (Prisma)
-│   └── app.js              # App entry point
-├── prisma/                 # Database Schema
-├── .env                    # Backend Config (GitIgnored)
-└── package.json            # Backend Dependencies
+│   │   ├── pages/          # Advanced Business Logic (Operator/Farmer/Admin)
+│   │   ├── utils/          # Pricing & Calculation Engines
+│   │   └── services/       # API Communications
+├── src/                    # Backend Infrastructure
+│   ├── controllers/        # Request Orchestration
+│   ├── services/           # Business Logic & DB Interaction
+│   └── routes/             # API Gateway
+├── prisma/                 # Relational Schema Definitions
+└── scripts/                # Administrative & Maintenance Utilities
 ```
-
-## 🔐 API Endpoints
-
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/auth/register` | Register new user | Public |
-| `POST` | `/auth/login` | Login user | Public |
-| `GET` | `/assets` | List all assets | Public |
-| `POST` | `/assets` | Create a new asset | **Operator** |
-| `POST` | `/bookings` | Book an asset | **Farmer** |
-| `GET` | `/bookings/my` | View my bookings | **User** |

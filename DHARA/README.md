@@ -1,53 +1,43 @@
-# Rural Uber - Frontend MVP
+# DHARA: Agricultural Resource Management Interface
 
-Welcome to the **Rural Uber** frontend MVP! This is a React + Vite + Tailwind CSS application designed to connect farmers with asset operators.
+The DHARA frontend is a high-performance React application designed for the modern agricultural workforce. It provides specialized interfaces for fleet operators and independent farmers to manage resources, schedule bookings, and analyze performance metrics.
 
-## 🚀 Getting Started
+## 🌟 Key Features
 
-### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm or yarn
+-   **Dynamic Fleet Management**: Complete lifecycle management for agricultural machinery.
+-   **Financial Analytics Dashboard**: Built-in data visualization for tracking revenue, growth, and utilization rates.
+-   **Standardized Booking Engine**: Streamlined interface for farmers to discover and reserve machinery with transparent pricing.
+-   **Automated Scheduling**: Real-time availability tracking with collision detection.
+-   **Multi-language Support**: Full i18n integration for localized accessibility.
 
-### Installation
+## 🛠 Technology Stack
 
-1.  Navigate to the project directory:
-    ```bash
-    cd dhara
-    ```
-2.  Install dependencies:
+-   **Core**: React 19 (Vite)
+-   **Data Visualization**: Recharts
+-   **Styling**: High-fidelity Tailwind CSS implementation
+-   **State Management**: Optimized React Context API
+-   **API Client**: Axios with interceptors for secure communication
+-   **Routing**: React Router DOM v7
+
+## 🔑 User Roles & Permissions
+
+The application supports three distinct security tiers:
+
+1.  **Operator**: Advanced access to the Fleet Management Dashboard, Financial Analytics, and Listing Engines.
+2.  **Farmer**: Client-side access to the Machinery Market, Personal Scheduling, and Booking History.
+3.  **Admin**: Global oversight of platform metrics and user distribution.
+
+## ⚙️ Development Setup
+
+1.  **Installation**:
     ```bash
     npm install
     ```
-3.  Start the development server:
+2.  **Local Execution**:
     ```bash
     npm run dev
     ```
-4.  Open your browser at `http://localhost:5173`.
-
-## 🔑 Mock Credentials & Roles
-
-The app uses a simulated authentication system. You can register a new account or use the quick "Role Selection" on the login page.
-
-**Roles:**
-- **Farmer**: Can browse assets, book them, and view booking history.
-- **Operator**: Can dashboard stats, add new assets, and manage listed assets.
-- **Admin**: Can view platform user and asset statistics.
-
-**Quick Test credentials:**
-- Email: `any@example.com`
-- Password: `any`
-- Select Role: Click the button for the desired role (Farmer/Operator/Admin) on the login screen.
-
-## 📂 Project Structure
-
-- `src/components`: Reusable UI and Layout components.
-- `src/pages`: Page components organized by role (`farmer`, `operator`, `admin`).
-- `src/context`: Authentication state management.
-- `src/services`: Mock data and API placeholders.
-
-## 🛠 Tech Stack
-
-- **Framework**: React (Vite)
-- **Styling**: Tailwind CSS
-- **Routing**: React Router DOM (v6)
-- **Icons**: Lucide React
+3.  **Deployment Build**:
+    ```bash
+    npm run build
+    ```

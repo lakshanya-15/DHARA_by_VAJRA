@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Tractor, UserCircle } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
+
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,101 +12,114 @@ const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setLoading(true);
     setError('');
-
+    setLoading(true);
     try {
-      const res = await login(email, password);
-      if (res.success) {
-        // Navigate based on role from backend
-        const userRole = res.user?.role || 'FARMER'; // Default fallback
-
-        switch (userRole) {
-          case 'FARMER':
-            navigate('/farmer/assets');
-            break;
-          case 'OPERATOR':
-            navigate('/operator/dashboard');
-            break;
-          case 'ADMIN':
-            navigate('/admin/dashboard');
-            break;
-          default:
-            navigate('/');
+      const result = await login(email, password);
+      if (result.success) {
+        if (result.user.role === 'OPERATOR') {
+          navigate('/operator/dashboard');
+        } else {
+          navigate('/farmer/dashboard');
         }
       } else {
-        setError(res.message || 'Login failed');
+        setError(result.message);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
-      console.error(err);
+      console.error("Login catch error:", err);
+      setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-            <Tractor className="w-8 h-8 text-green-600" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Immersive Background - Softened */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url("/extracomponents/uibg1.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
+      </div>
+
+      <div className="relative z-10 max-w-md w-full mx-4 animate-fade-up">
+        {/* Light & Elegant Card */}
+        <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group border border-white">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl group-hover:bg-green-500/20 transition-colors duration-500"></div>
+
+          <div className="text-center mb-10 relative z-10">
+            <div className="inline-flex items-center justify-center w-24 h-24 mb-6 animate-float">
+              <img src="/dhara_logo.png" alt="Logo" className="w-16 h-16 object-cover rounded-full drop-shadow-xl" />
+            </div>
+            <h2 className="text-4xl font-black text-slate-800 tracking-tight">{t('login.title')}</h2>
+            <p className="text-slate-500 mt-2 font-bold text-sm uppercase tracking-widest">{t('login.subtitle')}</p>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mt-2">Login to Rural Uber</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            {error && (
+              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center animate-pulse">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{t('login.email')}</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-600 outline-none transition-all text-slate-900 font-bold placeholder:text-slate-300"
+                placeholder="farmer@dhara.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{t('login.password')}</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-600 outline-none transition-all text-slate-900 font-bold placeholder:text-slate-300"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-600/20 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 btn-premium uppercase tracking-widest text-sm"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  {t('login.authenticating')}
+                </span>
+              ) : t('login.signIn')}
+            </button>
+          </form>
+
+          <div className="mt-10 text-center relative z-10">
+            <p className="text-sm text-slate-400 font-bold">
+              {t('login.noAccount')}
+            </p>
+            <Link to="/register" className="inline-block mt-2 text-green-600 hover:text-green-700 font-black transition-colors border-b-2 border-green-600/10 hover:border-green-600 pb-0.5 uppercase tracking-widest text-[10px]">
+              {t('login.createAccount')}
+            </Link>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:bg-gray-400"
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-green-600 hover:text-green-700 font-medium">
-            Register
-          </Link>
+        {/* Brand Footer */}
+        <div className="text-center mt-8 text-white/20 text-[10px] font-black uppercase tracking-[0.3em] cursor-default select-none">
+          © 2026 VAJRA Systems • Rural India Empowered
         </div>
       </div>
     </div>

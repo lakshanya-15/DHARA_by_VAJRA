@@ -11,20 +11,44 @@ datasource db {
 }
 
 model Asset {
-  id           String    @id @default(uuid()) @db.Uuid
-  name         String
-  type         String
-  priceperday  Decimal   @db.Decimal(10, 2)
-  availability Boolean?  @default(true)
-  ownerid      String    @db.Uuid
-  createdat    DateTime? @default(now()) @db.Timestamp(6)
-  User         User      @relation(fields: [ownerid], references: [id], onUpdate: NoAction, map: "fk_asset_owner")
-  Booking      Booking[]
+  id                 String           @id @default(uuid()) @db.Uuid
+  name               String
+  type               String
+  category           AssetCategory    @default(SOIL_PREPARATION)
+  priceperday        Decimal          @db.Decimal(10, 2)
+  availability       Boolean?         @default(true)
+  ownerid            String           @db.Uuid
+  maintenanceDueDate DateTime?        @db.Date
+  createdat          DateTime?        @default(now()) @db.Timestamp(6)
+  User               User             @relation(fields: [ownerid], references: [id], onUpdate: NoAction, map: "fk_asset_owner")
+  Booking            Booking[]
+  MaintenanceLog     MaintenanceLog[]
+}
+
+model MaintenanceLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  assetid     String   @db.Uuid
+  date        DateTime @db.Date
+  type        String // e.g., "Oil Change", "Repair"
+  cost        Decimal  @db.Decimal(10, 2)
+  notes       String?
+  Asset       Asset    @relation(fields: [assetid], references: [id], onUpdate: NoAction)
+  createdat   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+enum AssetCategory {
+  SOIL_PREPARATION
+  SOWING
+  PLANT_PROTECTION
+  HARVESTING
+  TRANSPORTATION
+  OTHER
 }
 
 model Booking {
   id          String         @id @default(uuid()) @db.Uuid
   bookingdate DateTime       @db.Date
+  bookingTime String?        // Start time (e.g., "10:30 AM")
   status      booking_status
   farmerid    String         @db.Uuid
   assetid     String         @db.Uuid
@@ -32,7 +56,7 @@ model Booking {
   Asset       Asset          @relation(fields: [assetid], references: [id], onUpdate: NoAction, map: "fk_booking_asset")
   User        User           @relation(fields: [farmerid], references: [id], onUpdate: NoAction, map: "fk_booking_farmer")
 
-  @@unique([assetid, bookingdate], map: "unique_asset_booking_date")
+  @@unique([assetid, bookingdate, bookingTime], map: "unique_asset_booking_date_time")
 }
 
 model User {
@@ -44,6 +68,8 @@ model User {
   village   String?
   district  String?
   state     String?
+  lat       Decimal?  @db.Decimal(10, 7)
+  lng       Decimal?  @db.Decimal(10, 7)
   createdat DateTime? @default(now()) @db.Timestamp(6)
   Asset     Asset[]
   Booking   Booking[]
@@ -62,6 +88,7 @@ model Notification {
 
 enum booking_status {
   BOOKED
+  PENDING
   COMPLETED
   CANCELLED
 }

@@ -14,13 +14,22 @@ const config = require('./config');
 
 const app = express();
 
-// Allow frontend (or any client) to call the API from another origin (e.g. localhost:5173)
-const allowedOrigins = [config.corsOrigin, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+// Allow frontend (or any client) to call the API from another origin
+const allowedOrigins = [
+  config.corsOrigin,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'https://dhara-by-vajra.vercel.app' // Explicitly add the production frontend
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (like mobile apps or curl requests)
+    // allow requests with no origin (like mobile apps)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || !config.corsOrigin) {
+
+    // If CORS_ORIGIN is '*' or if origin is in allowed list
+    if (config.corsOrigin === '*' || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

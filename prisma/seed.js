@@ -7,6 +7,7 @@ const ASSETS = [
     {
         name: 'John Deere 5050D',
         type: 'Tractor',
+        category: 'SOIL_PREPARATION',
         price: 800,
         image: 'https://cdn-icons-png.flaticon.com/512/2675/2675869.png',
         location: 'Lucknow, UP',
@@ -16,6 +17,7 @@ const ASSETS = [
     {
         name: 'DJI Agras T40',
         type: 'Drone',
+        category: 'PLANT_PROTECTION',
         price: 1500,
         image: 'https://cdn-icons-png.flaticon.com/512/3069/3069186.png',
         location: 'Pune, MH',
@@ -25,6 +27,7 @@ const ASSETS = [
     {
         name: 'JCB 3DX',
         type: 'JCB',
+        category: 'OTHER',
         price: 1200,
         image: 'https://cdn-icons-png.flaticon.com/512/2361/2361664.png',
         location: 'Patna, Bihar',
@@ -34,6 +37,7 @@ const ASSETS = [
     {
         name: 'Mahindra 275 DI',
         type: 'Tractor',
+        category: 'SOIL_PREPARATION',
         price: 700,
         image: 'https://cdn-icons-png.flaticon.com/512/2675/2675869.png',
         location: 'Nasik, MH',
@@ -43,6 +47,7 @@ const ASSETS = [
     {
         name: 'Harvest Master 9000',
         type: 'Harvester',
+        category: 'HARVESTING',
         price: 2500,
         image: 'https://cdn-icons-png.flaticon.com/512/5836/5836091.png',
         location: 'Punjab',
@@ -99,19 +104,31 @@ async function main() {
         if (!owner) continue;
 
         try {
-            await prisma.asset.create({
-                data: {
+            // Check for existing asset to prevent duplicates
+            const existingAsset = await prisma.asset.findFirst({
+                where: {
                     name: assetData.name,
-                    type: assetData.type,
-                    priceperday: assetData.price, // Map price to priceperday
-                    availability: assetData.available,
-                    ownerid: owner.id,
-                    // createdat defaults to now()
+                    ownerid: owner.id
                 }
             });
-            console.log(`Created asset: ${assetData.name}`);
+
+            if (!existingAsset) {
+                await prisma.asset.create({
+                    data: {
+                        name: assetData.name,
+                        type: assetData.type,
+                        category: assetData.category,
+                        priceperday: assetData.price, // Map price to priceperday
+                        availability: assetData.available,
+                        ownerid: owner.id,
+                    }
+                });
+                console.log(`Created asset: ${assetData.name}`);
+            } else {
+                console.log(`Asset already exists: ${assetData.name}`);
+            }
         } catch (e) {
-            console.log(`Skipping asset ${assetData.name} (might mostly likely duplicate if running multiple times) - Error: ${e.message}`);
+            console.log(`Error seeding asset ${assetData.name}: ${e.message}`);
         }
     }
 

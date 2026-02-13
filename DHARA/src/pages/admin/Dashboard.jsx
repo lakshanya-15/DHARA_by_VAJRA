@@ -1,5 +1,5 @@
 import { ASSETS } from '../../services/mockData';
-import { Users, Tractor, Settings, ShieldCheck } from 'lucide-react';
+import { Users, Settings, ShieldCheck } from 'lucide-react';
 
 const AdminDashboard = () => {
   // Mock users data
@@ -15,7 +15,7 @@ const AdminDashboard = () => {
     <div className="space-y-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 bg-indigo-100 rounded-lg">
-           <ShieldCheck className="text-indigo-600" size={24} />
+          <ShieldCheck className="text-indigo-600" size={24} />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Admin Portal</h2>
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-4 rounded-full bg-green-50 text-green-600"><Tractor /></div>
+          <div className="p-2 rounded-full bg-white shadow-sm border border-green-100"><img src="/dhara_logo.png" alt="Logo" className="w-10 h-10 object-cover rounded-full" /></div>
           <div>
             <p className="text-sm text-gray-500">Total Assets</p>
             <h3 className="text-2xl font-bold text-gray-900">{ASSETS.length}</h3>
@@ -70,8 +70,8 @@ const AdminDashboard = () => {
                   <td className="p-4 font-medium text-gray-900">{user.name}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase
-                      ${user.role === 'Operator' 
-                        ? 'bg-purple-100 text-purple-700' 
+                      ${user.role === 'Operator'
+                        ? 'bg-purple-100 text-purple-700'
                         : 'bg-green-100 text-green-700'}`}>
                       {user.role}
                     </span>

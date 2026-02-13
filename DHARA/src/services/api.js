@@ -32,6 +32,8 @@ export const assetsAPI = {
   getAll: (params) => api.get('/assets', { params }),
   create: (assetData) => api.post('/assets', assetData),
   getById: (id) => api.get(`/assets/${id}`),
+  update: (id, data) => api.patch(`/assets/${id}`, data),
+  delete: (id) => api.delete(`/assets/${id}`),
 };
 
 export const bookingsAPI = {

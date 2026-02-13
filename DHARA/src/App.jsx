@@ -12,10 +12,14 @@ import Register from './pages/Register';
 
 import Assets from './pages/farmer/Assets';
 import Bookings from './pages/farmer/Bookings';
+import FarmerDashboard from './pages/farmer/Dashboard';
+import FarmerCalendar from './pages/farmer/Calendar';
 
 import OperatorDashboard from './pages/operator/Dashboard';
 import AddAsset from './pages/operator/AddAsset';
 import MyAssets from './pages/operator/MyAssets';
+import OperatorAnalytics from './pages/operator/Analytics';
+import MaintenanceLogs from './pages/operator/MaintenanceLogs';
 
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -39,11 +43,13 @@ function App() {
 
           {/* Protected Area with Sidebar Layout */}
           <Route element={<Layout />}>
-            
+
             {/* Farmer Routes */}
             <Route element={<ProtectedRoute allowedRoles={['farmer']} />}>
+              <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
               <Route path="/farmer/assets" element={<Assets />} />
               <Route path="/farmer/bookings" element={<Bookings />} />
+              <Route path="/farmer/calendar" element={<FarmerCalendar />} />
             </Route>
 
             {/* Operator Routes */}
@@ -51,6 +57,8 @@ function App() {
               <Route path="/operator/dashboard" element={<OperatorDashboard />} />
               <Route path="/operator/add-asset" element={<AddAsset />} />
               <Route path="/operator/assets" element={<MyAssets />} />
+              <Route path="/operator/analytics" element={<OperatorAnalytics />} />
+              <Route path="/operator/maintenance" element={<MaintenanceLogs />} />
             </Route>
 
             {/* Admin Routes */}

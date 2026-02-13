@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../services/api';
 import { Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Bookings = () => {
+  const { t } = useTranslation();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,21 +16,21 @@ const Bookings = () => {
         setBookings(response.data.data || []);
       } catch (err) {
         console.error("Failed to fetch bookings:", err);
-        setError("Failed to load bookings.");
+        setError(t('farmer.noBookings'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
-  }, []);
+  }, [t]);
 
-  if (loading) return <div className="p-4">Loading bookings...</div>;
+  if (loading) return <div className="p-4">{t('common.loading')}</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 border-b pb-4 border-gray-200">My Bookings</h2>
+      <h2 className="text-2xl font-bold text-gray-800 border-b pb-4 border-gray-200">{t('farmer.mySchedule')}</h2>
 
       <div className="grid gap-4">
         {bookings.map((booking) => (
@@ -42,14 +44,19 @@ const Bookings = () => {
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 text-lg">{booking.Asset?.name || 'Unknown Asset'}</h3>
+                <h3 className="font-bold text-gray-900 text-lg">{booking.Asset?.name || t('operator.other')}</h3>
                 <p className="text-sm text-green-700 font-medium flex items-center gap-1 mt-1">
-                  <UserIcon size={14} /> Renting from: {booking.Asset?.operatorName || 'Operator'}
+                  <UserIcon size={14} /> {t('landing.howItWorks.step2Desc').split('.')[0]}: {booking.Asset?.operatorName || t('common.operator')}
                 </p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
                     <Calendar size={14} /> {new Date(booking.bookingdate).toLocaleDateString()}
                   </span>
+                  {booking.bookingTime && (
+                    <span className="flex items-center gap-1 text-green-600 font-medium">
+                      <Clock size={14} /> {booking.bookingTime}
+                    </span>
+                  )}
                   {/* Duration is not in Booking model, removed */}
                 </div>
               </div>
@@ -70,7 +77,7 @@ const Bookings = () => {
 
         {bookings.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-            <p className="text-gray-400">No bookings found.</p>
+            <p className="text-gray-400">{t('farmer.noBookings')}</p>
           </div>
         )}
       </div>
