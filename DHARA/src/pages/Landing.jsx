@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Users, Shield, Zap, CheckCircle, ArrowRight, Play, Globe, Menu, X, Star, Calendar, MessageSquare,
   MapPin, Clock, ShieldCheck, Heart, Languages, IndianRupee, Bot, Sparkles, Mic
@@ -12,6 +13,15 @@ const Landing = () => {
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'hi' : 'en';
     i18n.changeLanguage(newLang);
+  };
+
+  const getDashboardPath = () => {
+    if (!user) return '/login';
+    const role = user.role?.toLowerCase();
+    if (role === 'farmer') return '/farmer/dashboard';
+    if (role === 'operator') return '/operator/dashboard';
+    if (role === 'admin') return '/admin/dashboard';
+    return '/';
   };
 
   return (
@@ -112,6 +122,21 @@ const Landing = () => {
                     {t('landing.logIn')}
                   </Link>
                 )}
+              </div>
+
+              {/* AI Voice Teaser Badge */}
+              <div className="mt-8 flex items-center gap-4 group cursor-default">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20" />
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg relative z-10 border border-white/20">
+                    <Mic size={20} fill="white" />
+                  </div>
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-black text-green-400 uppercase tracking-widest leading-none mb-1">Hackathon Feature</p>
+                  <p className="text-sm font-bold text-white tracking-tight">VAJRA AI Assistant Enabled</p>
+                  <p className="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">English • Hindi • Voice Interactive</p>
+                </div>
               </div>
             </div>
 
