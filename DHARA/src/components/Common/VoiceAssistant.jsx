@@ -31,8 +31,8 @@ const VoiceAssistant = () => {
 
         console.log("Initializing Speech Recognition...");
         recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = false;
+        recognitionRef.current.continuous = true; // Stay on while speaking
+        recognitionRef.current.interimResults = true; // Show results as they come
 
         recognitionRef.current.onstart = () => {
             console.log("Speech recognition started");
@@ -41,10 +41,24 @@ const VoiceAssistant = () => {
         };
 
         recognitionRef.current.onresult = (event) => {
-            const currentTranscript = event.results[0][0].transcript;
-            console.log("Transcript received:", currentTranscript);
-            setTranscript(currentTranscript);
-            handleVoiceCommand(currentTranscript);
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+
+            if (finalTranscript) {
+                console.log("Final Transcript:", finalTranscript);
+                setTranscript(finalTranscript);
+                handleVoiceCommand(finalTranscript);
+            } else {
+                setTranscript(interimTranscript); // Show interim results in bubble
+            }
         };
 
         recognitionRef.current.onend = () => {
@@ -68,6 +82,11 @@ const VoiceAssistant = () => {
     const speak = (text) => {
         if (!synthRef) return;
 
+        // Stop listening while speaking to avoid feedback
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
+
         // Cancel any ongoing speech
         synthRef.cancel();
 
@@ -77,7 +96,10 @@ const VoiceAssistant = () => {
         utterance.pitch = 1.0;
 
         utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
+        utterance.onend = () => {
+            setIsSpeaking(false);
+            // Optionally restart listening if needed, but manual trigger is safer
+        };
 
         synthRef.speak(utterance);
     };
@@ -86,59 +108,70 @@ const VoiceAssistant = () => {
         const input = text.toLowerCase();
         setShowChat(true);
 
-        // --- Intelligence Engine: Intent Parsing ---
+        // --- Intelligence Engine: Intent Parsing (Fuzzy Matching) ---
 
-        // 1. Navigation Commands
-        if (input.includes('dashboard') || input.includes('home') || input.includes('shuruat')) {
+        // 1. Navigation: Dashboard / Home
+        if (input.includes('dashboard') || input.includes('home') || input.includes('shuruat') || input.includes('mukhya')) {
             const path = user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/dashboard';
-            setReply(i18n.language === 'hi' ? "Dashboard khul raha hai." : "Opening your dashboard.");
-            speak(i18n.language === 'hi' ? "Dashboard khul raha hai." : "Opening your dashboard.");
+            const msg = i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard.";
+            setReply(msg);
+            speak(msg);
             setTimeout(() => navigate(path), 1500);
             return;
         }
 
-        if (input.includes('booking') || input.includes('order')) {
+        // 2. Navigation: Bookings / History
+        if (input.includes('booking') || input.includes('order') || input.includes('history') || input.includes('sauda')) {
             const path = user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/bookings';
-            setReply(i18n.language === 'hi' ? "Aapki bookings dikha raha hoon." : "Showing your bookings.");
-            speak(i18n.language === 'hi' ? "Aapki bookings dikha raha hoon." : "Showing your bookings.");
+            const msg = i18n.language === 'hi' ? "आपकी बुकिंग्स दिखा रहा हूँ।" : "Showing your bookings.";
+            setReply(msg);
+            speak(msg);
             setTimeout(() => navigate(path), 1500);
             return;
         }
 
-        if (input.includes('tractor') || input.includes('machine') || input.includes('rent')) {
-            setReply(i18n.language === 'hi' ? "Aap yahan machines dhoond sakte hain." : "You can search for machines here.");
-            speak(i18n.language === 'hi' ? "Aap yahan machines dhoond sakte hain." : "You can search for machines here.");
+        // 3. Navigation: Machinery / Assets
+        if (input.includes('tractor') || input.includes('machine') || input.includes('rent') || input.includes('kiraya') || input.includes('sadhan')) {
+            const msg = i18n.language === 'hi' ? "आप यहाँ मशीनें ढूँढ सकते हैं।" : "You can search for machines here.";
+            setReply(msg);
+            speak(msg);
             setTimeout(() => navigate('/farmer/assets'), 1500);
             return;
         }
 
-        if (input.includes('maintenance') || input.includes('service') || input.includes('repair')) {
+        // 4. Maintenance (Operator Only)
+        if (input.includes('maintenance') || input.includes('service') || input.includes('repair') || input.includes('marammat')) {
             if (user?.role?.toLowerCase() === 'operator') {
-                setReply(i18n.language === 'hi' ? "Service records khul rahe hain." : "Opening service records.");
-                speak(i18n.language === 'hi' ? "Service records khul rahe hain." : "Opening service records.");
+                const msg = i18n.language === 'hi' ? "सर्विस रिकॉर्ड्स खुल रहे हैं।" : "Opening service records.";
+                setReply(msg);
+                speak(msg);
                 setTimeout(() => navigate('/operator/maintenance'), 1500);
             } else {
-                setReply("This feature is for machine owners only.");
-                speak("This feature is for machine owners only.");
+                const msg = i18n.language === 'hi' ? "यह सुविधा केवल मशीन मालिकों के लिए है।" : "This feature is for machine owners only.";
+                setReply(msg);
+                speak(msg);
             }
             return;
         }
 
-        // 2. Problem Solving / Info
-        if (input.includes('money') || input.includes('payment') || input.includes('paisa')) {
-            setReply(i18n.language === 'hi' ? "Payments safe hain. Kaam poora hone par paisa transfer ho jayega." : "Payments are secure via Escrow. Funds are released after the task is completed.");
-            speak(i18n.language === 'hi' ? "Payments safe hain. Kaam poora hone par paisa transfer ho jayega." : "Payments are secure via Escrow. Funds are released after the task is completed.");
+        // 5. Payments / Escrow info
+        if (input.includes('money') || input.includes('payment') || input.includes('paisa') || input.includes('bhugtan')) {
+            const msg = i18n.language === 'hi' ? "पेमेंट सुरक्षित हैं। काम पूरा होने पर पैसा ट्रांसफर हो जाएगा।" : "Payments are secure via Escrow. Funds are released after the task is completed.";
+            setReply(msg);
+            speak(msg);
             return;
         }
 
-        if (input.includes('help') || input.includes('madad')) {
-            setReply(i18n.language === 'hi' ? "Main aapki navigation aur queries mein madad kar sakta hoon. Kuch bhi puchiye!" : "I can help you navigate and answer queries. Ask me anything!");
-            speak(i18n.language === 'hi' ? "Main aapki navigation aur queries mein madad kar sakta hoon. Kuch bhi puchiye!" : "I can help you navigate and answer queries. Ask me anything!");
+        // 6. Help
+        if (input.includes('help') || input.includes('madad') || input.includes('sahayata')) {
+            const msg = i18n.language === 'hi' ? "मैं आपकी नेविगेशन और सवालों में मदद कर सकता हूँ। कुछ भी पूछिए!" : "I can help you navigate and answer queries. Ask me anything!";
+            setReply(msg);
+            speak(msg);
             return;
         }
 
         // Default 
-        const defaultReply = i18n.language === 'hi' ? "Maaf kijiye, mujhe samajh nahi aaya. Phir se boliye?" : "I didn't quite get that. Could you repeat?";
+        const defaultReply = i18n.language === 'hi' ? "माफ़ कीजिये, मुझे समझ नहीं आया। फिर से बोलिये?" : "I didn't quite get that. Could you repeat?";
         setReply(defaultReply);
         speak(defaultReply);
     };

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Layout from './components/Layout/Layout';
+import VoiceAssistant from './components/Common/VoiceAssistant';
 
 // Pages
 import Landing from './pages/Landing';
@@ -71,6 +72,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <VoiceAssistant />
       </AuthProvider>
     </BrowserRouter>
   );
