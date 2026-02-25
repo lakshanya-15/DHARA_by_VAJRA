@@ -224,14 +224,52 @@ const VoiceAssistant = () => {
             return;
         }
 
-        // --- Keywords for High-Precision Matching (Navigation & Info) ---
+        // --- UNIVERSAL FEATURE ENGINE (Language, Navigation, Actions) ---
+
+        // 1. Language Switching
+        if (input.includes('hindi') || input.includes('hindi mein') || input.includes('हिन्दी')) {
+            i18n.changeLanguage('hi');
+            const msg = "ठीक है, अब मैं हिन्दी में बात करूँगा।";
+            setReply(msg);
+            speak(msg);
+            return;
+        }
+        if (input.includes('english') || input.includes('अंग्रेजी')) {
+            i18n.changeLanguage('en');
+            const msg = "Sure, switching to English now.";
+            setReply(msg);
+            speak(msg);
+            return;
+        }
+
+        // 2. Global Actions
+        if (input.includes('logout') || input.includes('sign out') || input.includes('bahar niklo') || input.includes('nikalna')) {
+            const msg = i18n.language === 'hi' ? "लॉग आउट हो रहा है। फिर मिलेंगे!" : "Logging you out. See you soon!";
+            setReply(msg);
+            speak(msg);
+            // Simulate logout redirect if needed, or trigger logout if auth provides it
+            setTimeout(() => navigate('/'), 1500);
+            return;
+        }
+
+        // Keywords for High-Precision Matching
         const intents = [
-            { id: 'dashboard', keys: ['dashboard', 'home', 'shuruat', 'mukhya', 'front', 'main', 'start'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/dashboard', msg: i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard." },
-            { id: 'bookings', keys: ['booking', 'order', 'history', 'sauda', 'booked', 'mere orders', 'list'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/bookings', msg: i18n.language === 'hi' ? "आपकी बुकिंग्स दिखा रहा हूँ।" : "Showing your bookings." },
-            { id: 'assets', keys: ['tractor', 'machine', 'rent', 'kiraya', 'sadhan', 'equipment', 'harrow', 'cultivator', 'harvester'], path: '/farmer/assets', msg: i18n.language === 'hi' ? "आप यहाँ मशीनें ढूँढ सकते हैं।" : "You can search for machines here." },
-            { id: 'maintenance', keys: ['maintenance', 'service', 'repair', 'marammat', 'checkup', 'fix'], path: '/operator/maintenance', msg: i18n.language === 'hi' ? "सर्विस रिकॉर्ड्स खुल रहे हैं।" : "Opening service records." },
-            { id: 'money', keys: ['money', 'payment', 'paisa', 'bhugtan', 'earning', 'income', 'wallet'], msg: i18n.language === 'hi' ? "पेमेंट सुरक्षित हैं। काम पूरा होने पर पैसा ट्रांसफर हो जाएगा।" : "Payments are secure via Escrow. Funds are released after the task is completed." },
-            { id: 'help', keys: ['help', 'madad', 'sahayata', 'support', 'kaise', 'how to'], msg: i18n.language === 'hi' ? "मैं आपकी नेविगेशन और सवालों में मदद कर सकता हूँ। कुछ भी पूछिए!" : "I can help you navigate and answer queries. Ask me anything!" }
+            // Farmer Routes
+            { id: 'farmer_dash', roles: ['farmer'], keys: ['dashboard', 'home', 'shuruat', 'mukhya'], path: '/farmer/dashboard', msg: i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard." },
+            { id: 'assets', roles: ['farmer'], keys: ['tractor', 'machine', 'rent', 'kiraya', 'sadhan', 'book', 'booking', 'marketplace'], path: '/farmer/assets', msg: i18n.language === 'hi' ? "आप यहाँ मशीनें ढूँढ सकते हैं और बुक कर सकते हैं।" : "You can search and book machines here." },
+            { id: 'bookings', roles: ['farmer'], keys: ['orders', 'my bookings', 'sauda', 'itihas', 'history'], path: '/farmer/bookings', msg: i18n.language === 'hi' ? "आपकी बुकिंग्स यहाँ हैं।" : "Your bookings are here." },
+            { id: 'calendar', roles: ['farmer'], keys: ['calendar', 'schedule', 'timetable', 'date'], path: '/farmer/calendar', msg: i18n.language === 'hi' ? "आपका कैलेंडर खुल रहा है।" : "Opening your calendar." },
+
+            // Operator Routes
+            { id: 'operator_dash', roles: ['operator'], keys: ['business', 'kamai', 'operator dashboard'], path: '/operator/dashboard', msg: i18n.language === 'hi' ? "आपका बिज़नेस डैशबोर्ड यहाँ है।" : "Your business dashboard is here." },
+            { id: 'add_asset', roles: ['operator'], keys: ['add machine', 'naee machine', 'list equipment'], path: '/operator/add-asset', msg: i18n.language === 'hi' ? "नई मशीन जोड़ने का पेज खुल रहा है।" : "Opening page to add a new machine." },
+            { id: 'operator_assets', roles: ['operator'], keys: ['my machines', 'meree assets', 'fleet'], path: '/operator/assets', msg: i18n.language === 'hi' ? "आपका मशीनी बेड़ा यहाँ है।" : "Your machinery fleet is here." },
+            { id: 'analytics', roles: ['operator'], keys: ['analytics', 'profit', 'graphs', 'fayda', 'report'], path: '/operator/analytics', msg: i18n.language === 'hi' ? "आपका बिज़नेस विश्लेषण खुल रहा है।" : "Opening your business analytics." },
+            { id: 'maintenance', roles: ['operator'], keys: ['maintenance', 'service', 'repair', 'marammat'], path: '/operator/maintenance', msg: i18n.language === 'hi' ? "सर्विस रिकॉर्ड्स यहाँ हैं।" : "Service records are here." },
+
+            // Common
+            { id: 'money', keys: ['money', 'payment', 'paisa', 'bhugtan', 'earning'], msg: i18n.language === 'hi' ? "पेमेंट सुरक्षित हैं। काम पूरा होने पर पैसा ट्रांसफर हो जाएगा।" : "Payments are secure via Escrow. Funds are released after the task is completed." },
+            { id: 'help', keys: ['help', 'madad', 'sahayata', 'support'], msg: i18n.language === 'hi' ? "मैं आपकी नेविगेशन और सवालों में मदद कर सकता हूँ। कुछ भी पूछिए!" : "I can help you navigate and answer queries. Ask me anything!" }
         ];
 
         // Match Logic
@@ -241,8 +279,9 @@ const VoiceAssistant = () => {
             });
 
             if (hasMatch) {
-                if (intent.id === 'maintenance' && user?.role?.toLowerCase() !== 'operator') {
-                    const errorMsg = i18n.language === 'hi' ? "यह सुविधा केवल मशीन मालिकों के लिए है।" : "This feature is for machine owners only.";
+                // Role Check
+                if (intent.roles && !intent.roles.includes(user?.role?.toLowerCase())) {
+                    const errorMsg = i18n.language === 'hi' ? `यह सुविधा केवल ${intent.roles.join(' और ')} के लिए है।` : `This feature is for ${intent.roles.join(' and ')} only.`;
                     setReply(errorMsg);
                     speak(errorMsg);
                     return;
