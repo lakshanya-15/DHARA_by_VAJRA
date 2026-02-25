@@ -80,8 +80,8 @@ const FarmerDashboard = () => {
             {/* Header - Simple & Elegant */}
             <div className="glass-card p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group border-white/60">
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-black text-slate-800 tracking-tighter leading-none mb-2">{t('farmer.console')}</h2>
-                    <p className="text-slate-500 font-bold text-sm max-w-md leading-relaxed">
+                    <h2 className="text-4xl font-black text-slate-800 tracking-tight leading-none mb-2">{t('farmer.console')}</h2>
+                    <p className="text-slate-500 font-medium text-sm max-w-md leading-relaxed">
                         {t('farmer.welcomeMessage', { name: user?.name })}
                     </p>
                 </div>
@@ -90,8 +90,8 @@ const FarmerDashboard = () => {
                         {user?.name?.charAt(0)}
                     </div>
                     <div>
-                        <p className="text-[9px] font-black text-green-700/60 uppercase tracking-[0.2em] mb-0.5">{t('farmer.villageNetwork')}</p>
-                        <p className="text-base font-black text-slate-800">{user?.village || t('farmer.localRegion')}</p>
+                        <p className="text-xs font-semibold text-green-700/80 uppercase tracking-widest mb-0.5">{t('farmer.villageNetwork')}</p>
+                        <p className="text-base font-bold text-slate-800">{user?.village || t('farmer.localRegion')}</p>
                     </div>
                 </div>
             </div>
@@ -106,8 +106,8 @@ const FarmerDashboard = () => {
                                 : stat.icon}
                         </div>
                         <div>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-0.5">{stat.title}</p>
-                            <h3 className="text-2xl font-black text-slate-800 tracking-tighter">{stat.value}</h3>
+                            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{stat.title}</p>
+                            <h3 className="text-2xl font-black text-slate-800">{stat.value}</h3>
                         </div>
                     </div>
                 ))}
@@ -119,14 +119,14 @@ const FarmerDashboard = () => {
                 <div className="flex bg-slate-50/50 border-b border-white/40 px-8 pt-6 gap-8 relative">
                     <button
                         onClick={() => setActiveTab('browse')}
-                        className={`pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative z-10 ${activeTab === 'browse' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 text-xs font-semibold uppercase tracking-wider transition-all relative z-10 ${activeTab === 'browse' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         {t('farmer.machineryMarket')}
                         {activeTab === 'browse' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
                     </button>
                     <button
                         onClick={() => setActiveTab('bookings')}
-                        className={`pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative z-10 ${activeTab === 'bookings' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 text-xs font-semibold uppercase tracking-wider transition-all relative z-10 ${activeTab === 'bookings' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         {t('farmer.mySchedule')}
                         {activeTab === 'bookings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
@@ -145,7 +145,7 @@ const FarmerDashboard = () => {
                                         placeholder={t('farmer.searchMachinery')}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-12 pr-6 py-3.5 bg-white border border-slate-100 rounded-xl focus:ring-4 focus:ring-green-500/5 focus:border-green-500 outline-none font-bold text-slate-800 transition-all shadow-sm"
+                                        className="w-full pl-12 pr-6 py-3.5 bg-white border border-slate-100 rounded-xl focus:ring-4 focus:ring-green-500/5 focus:border-green-500 outline-none font-medium text-slate-800 transition-all shadow-sm"
                                     />
                                 </div>
 
@@ -153,7 +153,7 @@ const FarmerDashboard = () => {
                                     <select
                                         value={selectedCategory}
                                         onChange={(e) => setSelectedCategory(e.target.value)}
-                                        className="flex-1 lg:flex-none px-6 py-3.5 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 focus:ring-4 focus:ring-green-500/5 focus:border-green-500 outline-none appearance-none cursor-pointer shadow-sm"
+                                        className="flex-1 lg:flex-none px-6 py-3.5 bg-white border border-slate-100 rounded-xl font-medium text-slate-600 focus:ring-4 focus:ring-green-500/5 focus:border-green-500 outline-none appearance-none cursor-pointer shadow-sm"
                                     >
                                         <option value="All">{t('farmer.allCategories')}</option>
                                         <option value="SOIL_PREPARATION">{t('operator.soilPrep')}</option>
@@ -165,7 +165,7 @@ const FarmerDashboard = () => {
                                     </select>
 
                                     <div className="flex items-center gap-4 px-6 py-3.5 bg-white border border-slate-100 rounded-xl shadow-sm">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{t('farmer.radius', { radius })}</span>
+                                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">{t('farmer.radius', { radius })}</span>
                                         <input
                                             type="range" min="5" max="100" step="5"
                                             value={radius} onChange={(e) => setRadius(e.target.value)}
@@ -182,7 +182,7 @@ const FarmerDashboard = () => {
                                         <div className="h-56 bg-slate-50 p-6 relative flex items-center justify-center">
                                             {!asset.availability && (
                                                 <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
-                                                    <span className="bg-white/90 px-4 py-2 rounded-xl text-[10px] font-black text-slate-900 uppercase tracking-widest">{t('farmer.reserved')}</span>
+                                                    <span className="bg-white/90 px-4 py-2 rounded-xl text-xs font-bold text-slate-900 uppercase tracking-widest">{t('farmer.reserved')}</span>
                                                 </div>
                                             )}
                                             <img
@@ -195,22 +195,22 @@ const FarmerDashboard = () => {
                                         <div className="p-6">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <h4 className="font-black text-slate-800 text-lg tracking-tight mb-1">{asset.name}</h4>
+                                                    <h4 className="font-bold text-slate-800 text-lg mb-1">{asset.name}</h4>
                                                     <div className="flex items-center gap-2 text-slate-400">
                                                         <MapPin size={12} />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest">{asset.location || 'Local Hub'}</span>
+                                                        <span className="text-xs font-medium uppercase tracking-wider">{asset.location || 'Local Hub'}</span>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-xl font-black text-green-600 tracking-tighter">₹{asset.hourlyRate}</p>
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">per hour</p>
+                                                    <p className="text-xl font-black text-green-600">₹{asset.hourlyRate}</p>
+                                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">per hour</p>
                                                 </div>
                                             </div>
 
                                             <button
                                                 onClick={() => setSelectedAsset(asset)}
                                                 disabled={!asset.availability}
-                                                className={`w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
+                                                className={`w-full py-3.5 rounded-xl font-semibold text-sm uppercase tracking-wider transition-all
                                                           ${asset.availability
                                                         ? 'bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-600/10 active:scale-95'
                                                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -240,10 +240,10 @@ const FarmerDashboard = () => {
                                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto">
                                         <Calendar className="text-gray-200" size={40} />
                                     </div>
-                                    <p className="text-gray-400 font-bold text-lg">{t('farmer.noBookings')}</p>
+                                    <p className="text-gray-400 font-medium text-lg">{t('farmer.noBookings')}</p>
                                     <button
                                         onClick={() => setActiveTab('browse')}
-                                        className="text-green-600 font-black uppercase text-xs tracking-widest hover:underline"
+                                        className="text-green-600 font-semibold uppercase text-xs tracking-wider hover:underline"
                                     >
                                         {t('farmer.goToMarket')}
                                     </button>
@@ -257,25 +257,25 @@ const FarmerDashboard = () => {
                                                     <img src="/dhara_logo.png" className="w-full h-full object-cover rounded-full" alt="Logo" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-lg font-black text-slate-800 tracking-tight">{booking.Asset?.name || 'Machinery'}</h4>
+                                                    <h4 className="text-lg font-bold text-slate-800">{booking.Asset?.name || 'Machinery'}</h4>
                                                     <div className="flex items-center gap-4 mt-1">
                                                         <div className="flex items-center gap-1.5 text-slate-400">
                                                             <Calendar size={12} />
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest">{booking.startDate}</span>
+                                                            <span className="text-xs font-medium uppercase tracking-wider">{booking.startDate}</span>
                                                         </div>
                                                         <div className="flex items-center gap-1.5 text-slate-400">
                                                             <Clock size={12} />
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest">{booking.bookingTime}</span>
+                                                            <span className="text-xs font-medium uppercase tracking-wider">{booking.bookingTime}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-8">
                                                 <div className="text-right">
-                                                    <p className="text-xl font-black text-slate-800 tracking-tighter">₹{booking.Asset?.hourlyRate || 0}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('farmer.hourlyYield')}</p>
+                                                    <p className="text-xl font-black text-slate-800">₹{booking.Asset?.hourlyRate || 0}</p>
+                                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('farmer.hourlyYield')}</p>
                                                 </div>
-                                                <div className={`px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em]
+                                                <div className={`px-5 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wider
                                                     ${booking.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                                     {booking.status}
                                                 </div>
@@ -340,8 +340,8 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                     <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-green-700 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-green-600/30 animate-pulse-glow">
                         <CheckCircle className="w-12 h-12 text-white" strokeWidth={3} />
                     </div>
-                    <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter">{t('farmer.reserveMachineModal.successTitle')}</h3>
-                    <p className="text-slate-500 font-bold mb-10 leading-relaxed uppercase tracking-tighter">
+                    <h3 className="text-4xl font-black text-slate-900 mb-4">{t('farmer.reserveMachineModal.successTitle')}</h3>
+                    <p className="text-slate-500 font-medium mb-10 leading-relaxed uppercase tracking-wider">
                         {t('farmer.reserveMachineModal.successText')}
                     </p>
                     <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden shadow-inner">
@@ -366,17 +366,17 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                         <img src="/dhara_logo.png" alt="Logo" className="w-12 h-12 object-cover rounded-full" />
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter">{t('farmer.reserveMachineModal.title')}</h3>
-                        <p className="text-[10px] text-green-600 font-black uppercase tracking-[0.2em] mt-1">{t('farmer.reserveMachineModal.securing', { name: asset.name })}</p>
+                        <h3 className="text-3xl font-black text-slate-900 leading-tight">{t('farmer.reserveMachineModal.title')}</h3>
+                        <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mt-1">{t('farmer.reserveMachineModal.securing', { name: asset.name })}</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-                    {error && <div className="p-5 bg-red-500/10 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-red-500/10 animate-shake">{error}</div>}
+                    {error && <div className="p-5 bg-red-500/10 text-red-600 text-xs font-semibold uppercase tracking-wider rounded-2xl border border-red-500/10 animate-shake">{error}</div>}
 
                     <div className="grid gap-6">
                         <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 px-2 transition-colors group-focus-within/field:text-green-600">{t('farmer.reserveMachineModal.selectedDate')}</label>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1 transition-colors group-focus-within/field:text-green-600">{t('farmer.reserveMachineModal.selectedDate')}</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-green-600 transition-colors">
                                     <Calendar size={22} />
@@ -392,7 +392,7 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                         </div>
 
                         <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 px-2 transition-colors group-focus-within/field:text-green-600">{t('farmer.reserveMachineModal.preferredTime')}</label>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1 transition-colors group-focus-within/field:text-green-600">{t('farmer.reserveMachineModal.preferredTime')}</label>
                             <div className="relative">
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-green-600 transition-colors">
                                     <Clock size={22} />
@@ -412,19 +412,19 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-2xl -mr-16 -mt-16"></div>
                         <div className="flex justify-between items-center relative z-10">
                             <div>
-                                <p className="text-[10px] font-black text-green-700/60 uppercase tracking-[0.2em] mb-1 leading-none">{t('farmer.reserveMachineModal.standardRate')}</p>
-                                <p className="text-[10px] text-slate-400 font-bold italic">{t('farmer.reserveMachineModal.noUpfront')}</p>
+                                <p className="text-xs font-semibold text-green-700/80 uppercase tracking-wider mb-1 leading-none">{t('farmer.reserveMachineModal.standardRate')}</p>
+                                <p className="text-xs text-slate-500 font-medium italic">{t('farmer.reserveMachineModal.noUpfront')}</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-4xl font-black text-slate-900 tracking-tighter">₹{asset.hourlyRate}</span>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">/ hour</p>
+                                <span className="text-4xl font-black text-slate-900">₹{asset.hourlyRate}</span>
+                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">/ hour</p>
                             </div>
                         </div>
                         <div className="pt-5 border-t border-white/20 flex gap-4 items-start relative z-10">
                             <div className="w-8 h-8 rounded-lg bg-white/60 flex items-center justify-center shrink-0 shadow-sm border border-white">
                                 <Calculator size={14} className="text-green-600" />
                             </div>
-                            <p className="text-[10px] text-slate-500 font-bold leading-relaxed italic opacity-70">
+                            <p className="text-xs text-slate-500 font-medium leading-relaxed italic opacity-80">
                                 {t('farmer.reserveMachineModal.standardizedNote')}
                             </p>
                         </div>
@@ -433,8 +433,8 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all relative overflow-hidden group/btn btn-premium
-                            ${loading ? 'bg-slate-300 cursor-not-allowed' : 'bg-green-600 text-white shadow-[0_20px_40px_rgba(22,163,74,0.3)] hover:shadow-[0_25px_50px_rgba(22,163,74,0.4)] active:scale-95'}`}
+                        className={`w-full py-5 rounded-2xl font-bold text-base transition-all relative overflow-hidden group/btn shadow-lg
+                            ${loading ? 'bg-slate-300 cursor-not-allowed' : 'bg-green-600 text-white shadow-green-600/30 hover:shadow-green-600/40 active:scale-95'}`}
                     >
                         {loading ? t('farmer.reserveMachineModal.transmitting') : t('farmer.reserveMachineModal.confirm')}
                     </button>
