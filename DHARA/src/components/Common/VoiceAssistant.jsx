@@ -280,7 +280,17 @@ const VoiceAssistant = () => {
 
             if (hasMatch) {
                 // Role Check
-                if (intent.roles && !intent.roles.includes(user?.role?.toLowerCase())) {
+                const userRole = user?.role?.toLowerCase();
+                if (intent.roles && !intent.roles.includes(userRole)) {
+                    // Special case: if on landing, allow redirects to login/register even if role doesn't match
+                    if (!user) {
+                        const guestMsg = i18n.language === 'hi' ? "कृपया पहले लॉग इन करें।" : "Please login first to use this feature.";
+                        setReply(guestMsg);
+                        speak(guestMsg);
+                        setTimeout(() => navigate('/login'), 1500);
+                        return;
+                    }
+
                     const errorMsg = i18n.language === 'hi' ? `यह सुविधा केवल ${intent.roles.join(' और ')} के लिए है।` : `This feature is for ${intent.roles.join(' and ')} only.`;
                     setReply(errorMsg);
                     speak(errorMsg);
@@ -319,6 +329,17 @@ const VoiceAssistant = () => {
             setStatusMessage('Listening...');
             setShowChat(true);
             recognitionRef.current.lang = i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
+
+            // High-Precision Grammars (Restored)
+            const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+            if (SpeechGrammarList) {
+                const keywords = 'tractor kiraya booking paisa help dashboard sauda shuruat hindi english maintenance service analytics';
+                const grammar = `#JSGF V1.0; grammar keywords; public <keyword> = ${keywords.split(' ').join(' | ')} ;`;
+                const speechRecognitionList = new SpeechGrammarList();
+                speechRecognitionList.addFromString(grammar, 1);
+                recognitionRef.current.grammars = speechRecognitionList;
+                console.log("Grammars applied:", keywords);
+            }
 
             try {
                 recognitionRef.current?.start();
