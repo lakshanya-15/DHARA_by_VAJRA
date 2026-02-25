@@ -8,9 +8,6 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide back button on dashboard pages
-  const isDashboard = location.pathname.endsWith('/dashboard');
-
   return (
     <div className="min-h-screen bg-[#f8fafc] flex relative overflow-hidden">
       {/* Subtle Mesh Gradient Background */}
@@ -26,17 +23,15 @@ const Layout = () => {
       <main className={`flex-1 transition-all duration-500 relative z-10 ${user ? 'md:ml-72' : ''}`}>
         <div className="p-8 md:p-12 max-w-[1600px] mx-auto min-h-screen">
           {/* Global Back Button */}
-          {!isDashboard && (
-            <button
-              onClick={() => navigate(-1)}
-              className="mb-8 group flex items-center gap-3 px-5 py-2.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl text-slate-600 hover:text-green-600 hover:bg-white hover:shadow-xl hover:shadow-green-600/5 transition-all active:scale-95 shadow-sm"
-            >
-              <div className="p-1.5 bg-slate-50 group-hover:bg-green-50 rounded-lg transition-colors">
-                <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-0.5 transition-transform" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Go Back</span>
-            </button>
-          )}
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-8 group flex items-center gap-3 px-5 py-2.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl text-slate-600 hover:text-green-600 hover:bg-white hover:shadow-xl hover:shadow-green-600/5 transition-all active:scale-95 shadow-sm"
+          >
+            <div className="p-1.5 bg-slate-50 group-hover:bg-green-50 rounded-lg transition-colors">
+              <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-0.5 transition-transform" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Go Back</span>
+          </button>
 
           <Outlet />
         </div>
