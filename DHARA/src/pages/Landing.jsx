@@ -4,13 +4,23 @@ import {
   MapPin, Clock, ShieldCheck, Heart, Languages, IndianRupee
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 const Landing = () => {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'hi' : 'en';
     i18n.changeLanguage(newLang);
+  };
+
+  const getDashboardPath = () => {
+    if (!user) return '/login';
+    if (user.role === 'farmer') return '/farmer/dashboard';
+    if (user.role === 'operator') return '/operator/dashboard';
+    if (user.role === 'admin') return '/admin/dashboard';
+    return '/';
   };
 
   return (
@@ -35,7 +45,7 @@ const Landing = () => {
 
         {/* Navbar (Over Background) */}
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 backdrop-blur-sm">
-          <div className="flex items-center gap-3 group cursor-pointer">
+          <Link to={getDashboardPath()} className="flex items-center gap-3 group cursor-pointer">
             <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
               <img src="/dhara_logo.png" alt="DHARA" className="h-8 w-8 object-cover rounded-full border border-green-100" />
             </div>
@@ -45,7 +55,7 @@ const Landing = () => {
                 Distributed Holistic Agricultural<br />Resource Allocation
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Team Name Centered */}
           <div className="absolute left-1/2 transform -translate-x-1/2 hidden lg:block">
@@ -60,15 +70,26 @@ const Landing = () => {
               <Languages size={14} className="text-green-400" />
               {i18n.language === 'en' ? 'HI' : 'EN'}
             </button>
-            <Link to="/login" className="text-gray-200 hover:text-green-400 font-medium transition-colors text-sm">
-              {t('landing.logIn')}
-            </Link>
-            <Link
-              to="/register"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg text-sm"
-            >
-              {t('landing.getStarted')}
-            </Link>
+            {user ? (
+              <Link
+                to={getDashboardPath()}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-bold shadow-lg text-sm uppercase tracking-wider"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-200 hover:text-green-400 font-medium transition-colors text-sm">
+                  {t('landing.logIn')}
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg text-sm"
+                >
+                  {t('landing.getStarted')}
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
@@ -87,17 +108,19 @@ const Landing = () => {
               </p>
               <div className="flex gap-4">
                 <Link
-                  to="/register"
+                  to={user ? getDashboardPath() : "/register"}
                   className="px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-bold shadow-xl hover:scale-105 flex items-center gap-3 text-lg"
                 >
-                  {t('landing.startRenting')} <ArrowRight size={24} />
+                  {user ? 'Go to Dashboard' : t('landing.startRenting')} <ArrowRight size={24} />
                 </Link>
-                <Link
-                  to="/login"
-                  className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-xl hover:bg-white/20 transition-colors font-bold text-lg"
-                >
-                  {t('landing.logIn')}
-                </Link>
+                {!user && (
+                  <Link
+                    to="/login"
+                    className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-xl hover:bg-white/20 transition-colors font-bold text-lg"
+                  >
+                    {t('landing.logIn')}
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -255,17 +278,19 @@ const Landing = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/register"
+              to={user ? getDashboardPath() : "/register"}
               className="px-8 py-4 bg-white text-green-900 rounded-xl hover:bg-gray-100 transition-colors font-bold shadow-lg"
             >
-              {t('landing.cta.registerFarmer')}
+              {user ? 'My Dashboard' : t('landing.cta.registerFarmer')}
             </Link>
-            <Link
-              to="/register"
-              className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white/10 transition-colors font-bold"
-            >
-              {t('landing.cta.listEquipment')}
-            </Link>
+            {!user && (
+              <Link
+                to="/register"
+                className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white/10 transition-colors font-bold"
+              >
+                {t('landing.cta.listEquipment')}
+              </Link>
+            )}
           </div>
         </div>
       </div>
