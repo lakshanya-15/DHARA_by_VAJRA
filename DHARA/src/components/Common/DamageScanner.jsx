@@ -47,9 +47,18 @@ const DamageScanner = () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                setCapturedImage(event.target.result);
-                setScanPhase('ready');
-                stopCamera();
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = canvasRef.current;
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    setCapturedImage(event.target.result);
+                    setScanPhase('ready');
+                    stopCamera();
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -87,12 +96,18 @@ const DamageScanner = () => {
     };
 
     const analyzeImage = () => {
-        /**
-         * HIGH-PRECISION VAJRA VISION ENGINE
-         * Uses grid-based variance and localized feature extraction.
-         */
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        // FALLBACK: Ensure image is drawn to canvas if somehow missed (e.g. race condition)
+        if (canvas.width <= 1 || canvas.height <= 1) {
+            console.warn("Canvas sync correction triggered");
+            setValidationMessage("PROCESSING ERROR: RETAKE SCAN");
+            setScanPhase('result');
+            setIsScanning(false);
+            return;
+        }
+
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         const width = canvas.width;
@@ -246,13 +261,14 @@ const DamageScanner = () => {
         setUploadLoading(true);
         try {
             await damageAPI.create({
-                bookingid: id,
+                bookingid: id || '00000000-0000-0000-0000-000000000000',
                 scanType: scanType,
                 image: capturedImage,
                 healthScore,
                 issues: detectedIssues
             });
-            navigate(-1);
+            // Robust navigation back to bookings
+            navigate('/farmer/bookings');
         } catch (err) {
             console.error("Failed to save scan", err);
             alert("Connection error. Scan results lost.");
@@ -273,8 +289,10 @@ const DamageScanner = () => {
         const fetchHistory = async () => {
             try {
                 const res = await damageAPI.getByBooking(id);
-                const beforeScan = res.data.data.find(s => s.scanType === 'BEFORE');
-                setPreviousScan(beforeScan);
+                if (res.data && Array.isArray(res.data.data)) {
+                    const beforeScan = res.data.data.find(s => s.scanType === 'BEFORE');
+                    setPreviousScan(beforeScan);
+                }
             } catch (err) {
                 console.error("History fetch error", err);
             }
