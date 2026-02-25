@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../services/api';
-import { Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, User as UserIcon, Scan } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const Bookings = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,7 +71,14 @@ const Bookings = () => {
                   : (booking.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700')}`}>
                 {booking.status}
               </span>
-              {/* Total price logic would go here if available */}
+
+              <button
+                onClick={() => navigate(`/scan/${booking.id}`)}
+                className="mt-2 flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-cyan-500 transition-all shadow-lg shadow-cyan-600/20 active:scale-95 group"
+              >
+                <Scan size={14} className="group-hover:rotate-90 transition-transform" />
+                AI Damage Scan
+              </button>
             </div>
 
           </div>

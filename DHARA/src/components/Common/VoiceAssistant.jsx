@@ -333,7 +333,7 @@ const VoiceAssistant = () => {
             // High-Precision Grammars (Restored)
             const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
             if (SpeechGrammarList) {
-                const keywords = 'tractor kiraya booking paisa help dashboard sauda shuruat hindi english maintenance service analytics';
+                const keywords = 'tractor kiraya booking paisa help dashboard sauda shuruat hindi english maintenance service analytics scan damage nuksan scanner';
                 const grammar = `#JSGF V1.0; grammar keywords; public <keyword> = ${keywords.split(' ').join(' | ')} ;`;
                 const speechRecognitionList = new SpeechGrammarList();
                 speechRecognitionList.addFromString(grammar, 1);
