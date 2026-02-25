@@ -9,6 +9,7 @@ const assetRoutes = require('./routes/assetRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const config = require('./config');
 
@@ -51,6 +52,7 @@ app.get('/', (req, res) => {
       assets: 'GET /assets, POST /assets (OPERATOR)',
       bookings: 'POST /bookings (FARMER), GET /bookings/my',
       notifications: 'GET /notifications, PATCH /notifications/:id/read',
+      maintenance: 'GET /maintenance, POST /maintenance (OPERATOR)',
       admin: 'GET /admin/users, GET /admin/assets, GET /admin/bookings (ADMIN)',
     },
   });
@@ -61,6 +63,7 @@ app.use('/auth', authRoutes);
 app.use('/assets', assetRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/maintenance', maintenanceRoutes);
 app.use('/admin', adminRoutes);
 
 // Health check (optional, useful for demos)

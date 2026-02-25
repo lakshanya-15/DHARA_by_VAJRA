@@ -46,4 +46,9 @@ export const notificationsAPI = {
   markAsRead: (id) => api.patch(`/notifications/${id}/read`),
 };
 
+export const maintenanceAPI = {
+  list: (params) => api.get('/maintenance', { params }),
+  create: (data) => api.post('/maintenance', data),
+};
+
 export default api;

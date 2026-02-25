@@ -34,16 +34,7 @@ async function createAsset({ operatorId, name, type, category, description, hour
     include: { User: true }
   });
 
-  // Add initial maintenance log
-  await prisma.maintenanceLog.create({
-    data: {
-      assetid: asset.id,
-      date: new Date(),
-      type: "Initial Verification",
-      cost: 0,
-      notes: "Automatic system check passed upon listing."
-    }
-  });
+  // Initial maintenance log creation removed as requested for manual entry flow.
 
   return toApiAsset(asset);
 }

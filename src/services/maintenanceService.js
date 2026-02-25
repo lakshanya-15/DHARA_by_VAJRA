@@ -1,0 +1,41 @@
+const prisma = require('../config/prisma');
+
+async function createLog({ assetId, date, type, cost, notes }) {
+    return await prisma.maintenanceLog.create({
+        data: {
+            assetid: assetId,
+            date: new Date(date),
+            type,
+            cost: Number(cost),
+            notes,
+        },
+        include: { Asset: true }
+    });
+}
+
+async function getLogsByOperator(operatorId) {
+    return await prisma.maintenanceLog.findMany({
+        where: {
+            Asset: {
+                ownerid: operatorId
+            }
+        },
+        orderBy: {
+            date: 'desc'
+        },
+        include: { Asset: true }
+    });
+}
+
+async function getLogsByAsset(assetId) {
+    return await prisma.maintenanceLog.findMany({
+        where: { assetid: assetId },
+        orderBy: { date: 'desc' }
+    });
+}
+
+module.exports = {
+    createLog,
+    getLogsByOperator,
+    getLogsByAsset
+};
