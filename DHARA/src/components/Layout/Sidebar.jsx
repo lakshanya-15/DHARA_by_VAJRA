@@ -72,13 +72,16 @@ const Sidebar = () => {
         border-r border-slate-100 shadow-[2px_0_15px_rgba(0,0,0,0.03)]
       `}>
         <div className="flex flex-col h-full">
-          {/* Brand Header - Clean */}
-          <div className="p-10 border-b border-slate-50 flex items-center justify-center relative overflow-hidden group">
-            <h1 className="relative z-10 text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tighter">
+          {/* Brand Header - Clickable Logo */}
+          <Link
+            to="/"
+            className="p-10 border-b border-slate-50 flex items-center justify-center relative overflow-hidden group hover:bg-slate-50/50 transition-colors"
+          >
+            <h1 className="relative z-10 text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tighter group-hover:scale-105 transition-transform duration-500">
               <img src="/dhara_logo.png" alt="DHARA Logo" className="w-10 h-10 object-cover rounded-full drop-shadow-md border border-slate-100" />
               DHARA
             </h1>
-          </div>
+          </Link>
 
           {/* User Profile Hook - High Contrast */}
           <div className="mx-6 mt-8 mb-4 p-5 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm relative overflow-hidden group">
