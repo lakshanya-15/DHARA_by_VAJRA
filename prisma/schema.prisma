@@ -55,8 +55,20 @@ model Booking {
   createdat   DateTime?      @default(now()) @db.Timestamp(6)
   Asset       Asset          @relation(fields: [assetid], references: [id], onUpdate: NoAction, map: "fk_booking_asset")
   User        User           @relation(fields: [farmerid], references: [id], onUpdate: NoAction, map: "fk_booking_farmer")
+  DamageRecord DamageRecord[]
 
   @@unique([assetid, bookingdate, bookingTime], map: "unique_asset_booking_date_time")
+}
+
+model DamageRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  bookingid    String   @db.Uuid
+  scanType     String   // "BEFORE" or "AFTER"
+  image        String   // Base64 or URL
+  healthScore  Int
+  issues       Json     // Array of detected issues
+  createdat    DateTime @default(now()) @db.Timestamp(6)
+  Booking      Booking  @relation(fields: [bookingid], references: [id], onUpdate: NoAction)
 }
 
 model User {

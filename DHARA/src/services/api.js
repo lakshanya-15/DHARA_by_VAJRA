@@ -52,4 +52,9 @@ export const maintenanceAPI = {
   delete: (id) => api.delete(`/maintenance/${id}`),
 };
 
+export const damageAPI = {
+  create: (data) => api.post('/damage-scan', data),
+  getByBooking: (bookingId) => api.get(`/damage-scan/${bookingId}`)
+};
+
 export default api;
