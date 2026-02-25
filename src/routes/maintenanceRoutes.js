@@ -11,4 +11,7 @@ router.post('/', auth, requireRole(['OPERATOR']), maintenanceController.create);
 // OPERATOR: list logs for their assets
 router.get('/', auth, requireRole(['OPERATOR']), maintenanceController.list);
 
+// OPERATOR: delete a maintenance log
+router.delete('/:id', auth, requireRole(['OPERATOR']), maintenanceController.remove);
+
 module.exports = router;

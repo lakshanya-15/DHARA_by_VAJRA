@@ -37,4 +37,21 @@ async function list(req, res, next) {
     }
 }
 
-module.exports = { create, list };
+async function remove(req, res, next) {
+    try {
+        const log = await maintenanceService.findById(req.params.id);
+        if (!log) return error(res, 'Log not found', 404);
+
+        // Verify ownership via Asset
+        if (log.Asset.ownerid !== req.user.id) {
+            return error(res, 'Unauthorized to delete this log', 403);
+        }
+
+        await maintenanceService.deleteLog(req.params.id);
+        return success(res, { message: 'Log deleted successfully' });
+    } catch (e) {
+        next(e);
+    }
+}
+
+module.exports = { create, list, remove };

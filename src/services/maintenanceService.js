@@ -34,8 +34,23 @@ async function getLogsByAsset(assetId) {
     });
 }
 
+async function findById(id) {
+    return await prisma.maintenanceLog.findUnique({
+        where: { id },
+        include: { Asset: true }
+    });
+}
+
+async function deleteLog(id) {
+    return await prisma.maintenanceLog.delete({
+        where: { id }
+    });
+}
+
 module.exports = {
     createLog,
     getLogsByOperator,
-    getLogsByAsset
+    getLogsByAsset,
+    findById,
+    deleteLog
 };

@@ -29,6 +29,17 @@ const MyAssets = () => {
     fetchMyAssets();
   }, [user]);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm(i18n.language === 'hi' ? 'क्या आप इस मशीन को अपने बेड़े से हटाना चाहते हैं?' : 'Are you sure you want to remove this machine from your fleet?')) return;
+    try {
+      await assetsAPI.delete(id);
+      setMyAssets(prev => prev.filter(a => a.id !== id));
+    } catch (err) {
+      console.error("Failed to delete asset:", err);
+      alert(t('common.error'));
+    }
+  };
+
   const getAssetImage = (type) => {
     const assetImages = {
       'Tractor': '/dhara_logo.png',
@@ -69,7 +80,11 @@ const MyAssets = () => {
                 <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors">
                   <Edit size={16} />
                 </button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-red-600 transition-colors">
+                <button
+                  onClick={() => handleDelete(asset.id)}
+                  className="bg-white p-2 rounded-full shadow-sm hover:text-red-600 transition-colors"
+                  title="Delete Asset"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>

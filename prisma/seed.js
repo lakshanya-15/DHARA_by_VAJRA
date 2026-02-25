@@ -59,15 +59,16 @@ const ASSETS = [
 async function main() {
     console.log('Seeding database...');
 
+    /* 
+    // DISABLED: Auto-seeding assets and operators to allow manual control as requested by user.
+    
     // 1. Create Data Owners (Operators)
-    // Group assets by owner to avoid duplicate users
     const ownersMap = new Map();
     for (const asset of ASSETS) {
         if (!ownersMap.has(asset.ownerName)) {
             const password = await bcrypt.hash('password', 10);
             const email = `${asset.ownerName.toLowerCase().replace(/\s+/g, '.')}@example.com`;
 
-            // Upsert user
             const user = await prisma.user.upsert({
                 where: { email },
                 update: {},
@@ -104,7 +105,6 @@ async function main() {
         if (!owner) continue;
 
         try {
-            // Check for existing asset to prevent duplicates
             const existingAsset = await prisma.asset.findFirst({
                 where: {
                     name: assetData.name,
@@ -118,7 +118,7 @@ async function main() {
                         name: assetData.name,
                         type: assetData.type,
                         category: assetData.category,
-                        priceperday: assetData.price, // Map price to priceperday
+                        priceperday: assetData.price,
                         availability: assetData.available,
                         ownerid: owner.id,
                     }
@@ -131,6 +131,8 @@ async function main() {
             console.log(`Error seeding asset ${assetData.name}: ${e.message}`);
         }
     }
+    */
+    console.log('Seeding skipped (Disabled by developer for manual control).');
 
     console.log('Seeding finished.');
 }

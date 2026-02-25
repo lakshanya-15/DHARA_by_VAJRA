@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, AlertCircle, Wrench, X, Calendar as CalendarIcon, IndianRupee, FileText } from 'lucide-react';
+import { Plus, AlertCircle, Wrench, X, Calendar as CalendarIcon, IndianRupee, FileText, Trash2 } from 'lucide-react';
 import { maintenanceAPI, assetsAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -70,6 +70,17 @@ const MaintenanceLogs = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm(i18n.language === 'hi' ? 'क्या आप इस रिकॉर्ड को हटाना चाहते हैं?' : 'Are you sure you want to delete this record?')) return;
+        try {
+            await maintenanceAPI.delete(id);
+            fetchData();
+        } catch (err) {
+            console.error("Error deleting maintenance log:", err);
+            alert(t('common.error'));
+        }
+    };
+
     return (
         <div className="space-y-10 animate-fade-up pb-20">
             {/* Header */}
@@ -114,6 +125,7 @@ const MaintenanceLogs = () => {
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.serviceType')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.revenue')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('common.notes')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">{t('common.actions') || 'Actions'}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white/20">
@@ -148,6 +160,15 @@ const MaintenanceLogs = () => {
                                         </td>
                                         <td className="px-8 py-5 font-black text-slate-800 text-sm">₹{log.cost}</td>
                                         <td className="px-8 py-5 text-xs text-slate-500 font-medium leading-relaxed max-w-xs">{log.notes || '-'}</td>
+                                        <td className="px-8 py-5 text-right">
+                                            <button
+                                                onClick={() => handleDelete(log.id)}
+                                                className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all active:scale-95"
+                                                title="Delete Log"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             )}

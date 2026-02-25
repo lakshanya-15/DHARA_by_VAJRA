@@ -49,6 +49,7 @@ export const notificationsAPI = {
 export const maintenanceAPI = {
   list: (params) => api.get('/maintenance', { params }),
   create: (data) => api.post('/maintenance', data),
+  delete: (id) => api.delete(`/maintenance/${id}`),
 };
 
 export default api;
