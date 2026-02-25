@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, ArrowLeft } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -51,6 +51,17 @@ const Login = () => {
       >
         <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
       </div>
+
+      {/* Global Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-6 left-6 md:top-8 md:left-12 z-50 group flex items-center gap-3 px-5 py-2.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl text-slate-600 hover:text-green-600 hover:bg-white hover:shadow-xl hover:shadow-green-600/5 transition-all active:scale-95 shadow-sm"
+      >
+        <div className="p-1.5 bg-slate-50 group-hover:bg-green-50 rounded-lg transition-colors">
+          <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-0.5 transition-transform" />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('landing.howItWorks.step1Desc') ? 'Go Back' : 'Go Back'}</span>
+      </button>
 
       <div className="relative z-10 max-w-md w-full mx-4 animate-fade-up">
         {/* Light & Elegant Card */}
