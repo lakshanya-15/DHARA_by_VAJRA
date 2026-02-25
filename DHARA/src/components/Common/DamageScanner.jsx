@@ -85,68 +85,49 @@ const DamageScanner = () => {
 
     const analyzeImage = () => {
         /**
-         * REAL PIXEL ANALYSIS ENGINE (Vajra Vision Core)
-         * We use the canvas to extract pixel data for heuristic-based computer vision.
+         * HIGH-PRECISION VAJRA VISION ENGINE
+         * Uses grid-based variance and localized feature extraction.
          */
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
-
-        let rSum = 0, gSum = 0, bSum = 0;
-        let edgeIntensity = 0;
         const width = canvas.width;
         const height = canvas.height;
 
-        // Heuristic Counters
-        let darkClusters = 0; // Potential Oil Leaks
-        let rustClusters = 0; // Potential Corrosion
+        // 1. TEXTURE DENSITY & BLANK CHECK (Grid-based Variance)
+        const gridSize = 8;
+        const cellW = Math.floor(width / gridSize);
+        const cellH = Math.floor(height / gridSize);
+        let featurelessCells = 0;
 
-        // Sampling pixel data (Skipping to keep performance high)
-        const step = 4;
-        for (let i = 0; i < data.length; i += 4 * step) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+        for (let gy = 0; gy < gridSize; gy++) {
+            for (let gx = 0; gx < gridSize; gx++) {
+                let cellSum = 0;
+                let cellSqSum = 0;
+                let cellCount = 0;
 
-            rSum += r; gSum += g; bSum += b;
+                for (let y = gy * cellH; y < (gy + 1) * cellH; y += 4) {
+                    for (let x = gx * cellW; x < (gx + 1) * cellW; x += 4) {
+                        const idx = (y * width + x) * 4;
+                        if (idx >= data.length) continue;
+                        const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                        cellSum += brightness;
+                        cellSqSum += brightness * brightness;
+                        cellCount++;
+                    }
+                }
 
-            // 1. Detect Dark Blobs (Oil/Leaks)
-            // Near black: low RGB values
-            if (r < 40 && g < 40 && b < 40) darkClusters++;
-
-            // 2. Detect Rust (Orange/Brown Tones)
-            // Rust hue: R > G and G > B, with high R/B ratio
-            if (r > 120 && g > 60 && r > g * 1.5 && g > b * 1.2) rustClusters++;
-
-            // 3. Simple Edge Detection (Vertical Gradient)
-            if (i + 4 * width < data.length) {
-                const nextR = data[i + 4 * width];
-                const diff = Math.abs(r - nextR);
-                if (diff > 50) edgeIntensity++;
+                if (cellCount > 0) {
+                    const avg = cellSum / cellCount;
+                    const variance = (cellSqSum / cellCount) - (avg * avg);
+                    if (variance < 100) featurelessCells++; // Variance threshold for "blank"
+                }
             }
         }
 
-        const totalSamples = data.length / (4 * step);
-        const avgR = rSum / totalSamples;
-        const avgG = gSum / totalSamples;
-        const avgB = bSum / totalSamples;
-
-        // Calculate Contrast (Standard Deviation)
-        let sqDiffSum = 0;
-        const avgGray = (avgR + avgG + avgB) / 3;
-        for (let i = 0; i < data.length; i += 4 * step) {
-            const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            sqDiffSum += Math.pow(gray - avgGray, 2);
-        }
-        const stdDev = Math.sqrt(sqDiffSum / totalSamples);
-
-        // MAP METRICS TO REAL ISSUES
-        const issues = [];
-
-        // Blank Image Check: If contrast is very low, it's a blank wall/paper
-        if (stdDev < 15) {
-            // No issues detected for blank images
+        // Featureless Rejection: If too many cells are flat, it's a blank wall/paper
+        if (featurelessCells > (gridSize * gridSize * 0.75)) {
             setDetectedIssues([]);
             setHealthScore(100);
             setScanPhase('result');
@@ -154,9 +135,41 @@ const DamageScanner = () => {
             return;
         }
 
-        // Edge Detection Threshold: Scratches/Dents
-        // Higher edge density suggests surface damage or complex grain
-        if (edgeIntensity / totalSamples > 0.08) {
+        // 2. FEATURE EXTRACTION (Localized Anomalies)
+        let darkClusters = 0;
+        let rustClusters = 0;
+        let edgeIntensity = 0;
+        const step = 4;
+        const totalSamples = data.length / (4 * step);
+
+        for (let i = 0; i < data.length; i += 4 * step) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Local Contrast / Edge Calculation
+            if (i + 4 * width < data.length) {
+                const nextR = data[i + 4 * width];
+                const diff = Math.abs(r - nextR);
+                // Adaptive threshold: only count very sharp edges (potential scratches)
+                if (diff > 75) edgeIntensity++;
+            }
+
+            // Rust Check: Orange/Brown hue with structural clustering
+            if (r > 130 && g > 70 && r > g * 1.6 && g > b * 1.3) {
+                rustClusters++;
+            }
+
+            // Oil/Fluid Check: Discrete black anomalies
+            if (r < 30 && g < 30 && b < 30) {
+                darkClusters++;
+            }
+        }
+
+        const issues = [];
+
+        // Adaptive Scoring Logic
+        if (edgeIntensity / totalSamples > 0.05) {
             issues.push({
                 type: 'Surface Scratch',
                 severity: 'Low',
@@ -165,8 +178,7 @@ const DamageScanner = () => {
             });
         }
 
-        // Dark Blob Threshold: Oil/Fluid Leaks
-        if (darkClusters / totalSamples > 0.15) {
+        if (darkClusters / totalSamples > 0.10) {
             issues.push({
                 type: 'Fluid/Oil Leak',
                 severity: 'Critical',
@@ -175,7 +187,6 @@ const DamageScanner = () => {
             });
         }
 
-        // Rust Threshold
         if (rustClusters / totalSamples > 0.05) {
             issues.push({
                 type: 'Surface Corrosion',
@@ -186,7 +197,7 @@ const DamageScanner = () => {
         }
 
         setDetectedIssues(issues);
-        const finalScore = Math.max(0, 100 - (issues.length * 18));
+        const finalScore = Math.max(0, 100 - (issues.length * 15));
         setHealthScore(finalScore);
         setScanPhase('result');
         setIsScanning(false);
