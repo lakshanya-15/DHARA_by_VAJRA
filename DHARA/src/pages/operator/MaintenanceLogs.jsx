@@ -28,11 +28,12 @@ const MaintenanceLogs = () => {
                 assetsAPI.getAll({ operatorId: user?.id })
             ]);
             setLogs(logsRes.data.data || []);
-            setAssets(assetsRes.data.data || []);
+            const fetchedAssets = assetsRes.data.data || [];
+            setAssets(fetchedAssets);
 
-            // Set first asset as default in form if available
-            if (assetsRes.data.data?.length > 0 && !formData.assetId) {
-                setFormData(prev => ({ ...prev, assetId: assetsRes.data.data[0].id }));
+            // Set first asset as default in form if available and not set
+            if (fetchedAssets.length > 0 && !formData.assetId) {
+                setFormData(prev => ({ ...prev, assetId: fetchedAssets[0].id }));
             }
         } catch (err) {
             console.error("Error fetching maintenance data:", err);
@@ -76,14 +77,14 @@ const MaintenanceLogs = () => {
                 <div>
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-1">{t('operator.fleetService')}</h2>
                     <p className="text-slate-500 font-bold text-sm">
-                        {t('operator.fleetServiceDesc') || 'Maintain elite performance standards with health logs.'}
+                        {t('operator.fleetServiceDesc')}
                     </p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-blue-600/10 active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest text-[10px]"
                 >
-                    <Plus size={16} strokeWidth={3} /> {t('operator.logService') || 'Log Service'}
+                    <Plus size={16} strokeWidth={3} /> {t('operator.logService')}
                 </button>
             </div>
 
@@ -94,9 +95,9 @@ const MaintenanceLogs = () => {
                         <AlertCircle size={28} />
                     </div>
                     <div>
-                        <p className="text-[10px] text-orange-700 font-black uppercase tracking-widest mb-1">{t('operator.nextDue') || 'Health Status'}</p>
+                        <p className="text-[10px] text-orange-700 font-black uppercase tracking-widest mb-1">{t('operator.nextDue')}</p>
                         <p className="text-sm font-bold text-slate-800">
-                            {logs.length > 0 ? t('operator.healthyFleet') || 'All systems optimized' : t('operator.noLogs') || 'No service records yet'}
+                            {logs.length > 0 ? t('operator.healthyFleet') : t('operator.noLogs')}
                         </p>
                     </div>
                 </div>
@@ -110,9 +111,9 @@ const MaintenanceLogs = () => {
                             <tr className="bg-slate-50/50 border-b border-white/40">
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.machineIdentity')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('farmer.reserveMachineModal.selectedDate')}</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.serviceType') || 'Service Type'}</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.serviceType')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.revenue')}</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('common.notes') || 'Maintenance Details'}</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('common.notes')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white/20">
@@ -125,7 +126,7 @@ const MaintenanceLogs = () => {
                             ) : logs.length === 0 ? (
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center">
-                                        <p className="text-slate-400 font-bold italic">{t('operator.noLogs') || 'No maintenance records found'}</p>
+                                        <p className="text-slate-400 font-bold italic">{t('operator.noLogs')}</p>
                                     </td>
                                 </tr>
                             ) : (
@@ -171,8 +172,8 @@ const MaintenanceLogs = () => {
                                     <Wrench size={32} />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('operator.logService') || 'Log Maintenance'}</h3>
-                                    <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">{t('operator.fleetHeath') || 'Record machinery service'}</p>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('operator.logService')}</h3>
+                                    <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">{t('operator.fleetHealth')}</p>
                                 </div>
                             </div>
 
@@ -183,8 +184,9 @@ const MaintenanceLogs = () => {
                                         required
                                         value={formData.assetId}
                                         onChange={(e) => setFormData({ ...formData, assetId: e.target.value })}
-                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-800 focus:border-blue-500 outline-none transition-all shadow-inner"
+                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-800 focus:border-blue-500 outline-none transition-all shadow-inner cursor-pointer"
                                     >
+                                        <option value="" disabled>{t('common.loading')}</option>
                                         {assets.map(asset => (
                                             <option key={asset.id} value={asset.id}>{asset.name}</option>
                                         ))}
@@ -206,7 +208,7 @@ const MaintenanceLogs = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.serviceType') || 'Service Type'}</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.serviceType')}</label>
                                         <input
                                             type="text"
                                             required
@@ -219,7 +221,7 @@ const MaintenanceLogs = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.revenue') || 'Service Cost'}</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.revenue')}</label>
                                     <div className="relative">
                                         <IndianRupee size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input
@@ -234,7 +236,7 @@ const MaintenanceLogs = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('common.notes') || 'Notes'}</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('common.notes')}</label>
                                     <div className="relative">
                                         <FileText size={16} className="absolute left-5 top-5 text-slate-400" />
                                         <textarea
@@ -242,7 +244,7 @@ const MaintenanceLogs = () => {
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                             className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-800 focus:border-blue-500 outline-none transition-all shadow-inner resize-none"
-                                            placeholder="Initial verification passed..."
+                                            placeholder="Details about the work done..."
                                         />
                                     </div>
                                 </div>
@@ -253,7 +255,7 @@ const MaintenanceLogs = () => {
                                     className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all
                                         ${submitting ? 'bg-slate-300' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 active:scale-95'}`}
                                 >
-                                    {submitting ? t('common.syncing') : t('operator.logService') || 'Log Service Record'}
+                                    {submitting ? t('common.syncing') : t('operator.logService')}
                                 </button>
                             </form>
                         </div>
