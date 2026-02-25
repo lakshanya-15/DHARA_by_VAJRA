@@ -17,7 +17,8 @@
         "analytics": "Analytics",
         "myAssets": "My Assets",
         "addAsset": "Add Asset",
-        "maintenance": "Maintenance"
+        "maintenance": "Maintenance",
+        "myBookings": "My Bookings"
     },
     "login": {
         "title": "Welcome Back",

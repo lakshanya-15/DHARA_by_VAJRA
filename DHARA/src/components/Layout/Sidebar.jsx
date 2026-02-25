@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   TrendingUp,
-  Wrench
+  Wrench,
+  ClipboardList
 } from 'lucide-react';
 import { useState, isValidElement, cloneElement } from 'react';
 
@@ -33,6 +34,7 @@ const Sidebar = () => {
       case 'farmer':
         return [
           { name: t('sidebar.dashboard'), path: '/farmer/dashboard', icon: <LayoutDashboard /> },
+          { name: t('sidebar.myBookings'), path: '/farmer/bookings', icon: <ClipboardList /> },
           { name: t('sidebar.calendar'), path: '/farmer/calendar', icon: <Calendar /> },
         ];
       case 'operator':
