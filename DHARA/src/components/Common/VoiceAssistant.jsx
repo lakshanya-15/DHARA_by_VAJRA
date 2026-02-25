@@ -16,6 +16,10 @@ const VoiceAssistant = () => {
     const [showChat, setShowChat] = useState(false);
     const [isSupported, setIsSupported] = useState(true);
     const [statusMessage, setStatusMessage] = useState('');
+    const [history, setHistory] = useState([]); // Conversation History
+    const [isTraining, setIsTraining] = useState(false);
+    const [trainingData, setTrainingData] = useState({});
+    const [tempKey, setTempKey] = useState('');
 
     const recognitionRef = useRef(null);
     const synthRef = window.speechSynthesis;
@@ -141,10 +145,86 @@ const VoiceAssistant = () => {
     };
 
     const handleVoiceCommand = (text) => {
-        const input = text.toLowerCase();
+        const input = text.toLowerCase().trim();
         setShowChat(true);
 
-        // Keywords for High-Precision Matching
+        // --- Training Mode Logic ---
+        if (isTraining) {
+            if (!tempKey) {
+                setTempKey(input);
+                const msg = i18n.language === 'hi' ? `ठीक है, जब आप "${input}" कहें, तो मुझे क्या कहना चाहिए?` : `Got it. When you say "${input}", what should I respond with?`;
+                setReply(msg);
+                speak(msg);
+                return;
+            } else {
+                setTrainingData(prev => ({ ...prev, [tempKey]: input }));
+                const msg = i18n.language === 'hi' ? "समझ गया! मैंने वह सीख लिया है।" : "Understood! I've learned that.";
+                setReply(msg);
+                speak(msg);
+                setIsTraining(false);
+                setTempKey('');
+                return;
+            }
+        }
+
+        if (input.includes('train') || input.includes('sikhana') || input.includes('seekhen')) {
+            setIsTraining(true);
+            const msg = i18n.language === 'hi' ? "प्रशिक्षण मोड शुरू। क्या सिखाना है?" : "Training mode started. What phrase should I learn?";
+            setReply(msg);
+            speak(msg);
+            return;
+        }
+
+        // --- Check Training Data First ---
+        if (trainingData[input]) {
+            setReply(trainingData[input]);
+            speak(trainingData[input]);
+            return;
+        }
+
+        // --- Conversational Intelligence Engine (Personality & Small Talk) ---
+
+        // 1. Greetings
+        if (input.includes('hello') || input.includes('hi') || input.includes('namaste') || input.includes('salam') || input.includes('ram ram')) {
+            const greetings = i18n.language === 'hi'
+                ? [
+                    "नमस्ते! मैं वज्र हूँ, आपका डिजिटल साथी। आज मैं आपकी क्या मदद कर सकता हूँ?",
+                    "राम राम जी! धारा (DHARA) नेटवर्क में आपका स्वागत है।",
+                    "नमस्ते! आपकी खेती कैसी चल रही है?"
+                ]
+                : [
+                    "Hello! I am Vajra, your AI companion. How can I help you today?",
+                    "Hi there! Welcome to the DHARA network. Ready to optimize your harvest?",
+                    "Hello! It's great to talk to you. What's on your mind?"
+                ];
+            const msg = greetings[Math.floor(Math.random() * greetings.length)];
+            setReply(msg);
+            speak(msg);
+            setHistory(prev => [...prev, { role: 'user', text: input }, { role: 'assistant', text: msg }]);
+            return;
+        }
+
+        // 2. Identity / Who are you?
+        if (input.includes('who are you') || input.includes('tum kaun ho') || input.includes('kaun ho') || input.includes('identity')) {
+            const msg = i18n.language === 'hi'
+                ? "मैं वज्र हूँ, जो धारा (DHARA) द्वारा बनाया गया एक एआई सहायक हूँ। मेरा काम भारतीय किसानों की मदद करना और खेती को आसान बनाना है।"
+                : "I am Vajra, an AI assistant built by DHARA. My mission is to empower Indian farmers and make agriculture more efficient.";
+            setReply(msg);
+            speak(msg);
+            return;
+        }
+
+        // 3. Status Check / How are you?
+        if (input.includes('how are you') || input.includes('kaise ho') || input.includes('kya haal hai')) {
+            const msg = i18n.language === 'hi'
+                ? "मैं बहुत अच्छा हूँ और आपकी सेवा के लिए तैयार हूँ! आप कैसे हैं?"
+                : "I'm doing great and ready to serve you! How are you doing today?";
+            setReply(msg);
+            speak(msg);
+            return;
+        }
+
+        // --- Keywords for High-Precision Matching (Navigation & Info) ---
         const intents = [
             { id: 'dashboard', keys: ['dashboard', 'home', 'shuruat', 'mukhya', 'front', 'main', 'start'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/dashboard', msg: i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard." },
             { id: 'bookings', keys: ['booking', 'order', 'history', 'sauda', 'booked', 'mere orders', 'list'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/bookings', msg: i18n.language === 'hi' ? "आपकी बुकिंग्स दिखा रहा हूँ।" : "Showing your bookings." },
@@ -157,8 +237,7 @@ const VoiceAssistant = () => {
         // Match Logic
         for (const intent of intents) {
             const hasMatch = intent.keys.some(key => {
-                // Check if key is in input OR if fuzzy match is strong
-                return input.includes(key) || fuzzyMatch(input, key, 0.85); // High threshold for precision
+                return input.includes(key) || fuzzyMatch(input, key, 0.85);
             });
 
             if (hasMatch) {
@@ -227,7 +306,7 @@ const VoiceAssistant = () => {
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-green-600 font-black text-[10px] uppercase tracking-widest">
                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                            Vajra AI Assistant
+                            Vajra AI Assistant {isTraining && <span className="text-red-500 ml-2 animate-pulse">(Training...)</span>}
                         </div>
 
                         {statusMessage && (
