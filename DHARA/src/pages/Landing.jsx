@@ -133,8 +133,8 @@ const Landing = () => {
                   </div>
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-black text-green-400 uppercase tracking-widest leading-none mb-1">Hackathon Feature</p>
-                  <p className="text-sm font-bold text-white tracking-tight">VAJRA AI Assistant Enabled</p>
+                  <p className="text-[10px] font-black text-green-400 uppercase tracking-widest leading-none mb-1">New Feature</p>
+                  <p className="text-sm font-bold text-white tracking-tight">VAJRA AI Voice Assistant</p>
                   <p className="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">English • Hindi • Voice Interactive</p>
                 </div>
               </div>

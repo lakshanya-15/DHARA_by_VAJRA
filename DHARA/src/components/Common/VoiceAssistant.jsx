@@ -14,6 +14,8 @@ const VoiceAssistant = () => {
     const [reply, setReply] = useState('');
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [showChat, setShowChat] = useState(false);
+    const [isSupported, setIsSupported] = useState(true);
+    const [statusMessage, setStatusMessage] = useState('');
 
     const recognitionRef = useRef(null);
     const synthRef = window.speechSynthesis;
@@ -21,26 +23,46 @@ const VoiceAssistant = () => {
     useEffect(() => {
         // Initialize Speech Recognition
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.continuous = false;
-            recognitionRef.current.interimResults = false;
-
-            recognitionRef.current.onresult = (event) => {
-                const currentTranscript = event.results[0][0].transcript;
-                setTranscript(currentTranscript);
-                handleVoiceCommand(currentTranscript);
-            };
-
-            recognitionRef.current.onend = () => {
-                setIsListening(false);
-            };
-
-            recognitionRef.current.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-                setIsListening(false);
-            };
+        if (!SpeechRecognition) {
+            console.error("Speech Recognition not supported in this browser.");
+            setIsSupported(false);
+            return;
         }
+
+        console.log("Initializing Speech Recognition...");
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+
+        recognitionRef.current.onstart = () => {
+            console.log("Speech recognition started");
+            setIsListening(true);
+            setStatusMessage('');
+        };
+
+        recognitionRef.current.onresult = (event) => {
+            const currentTranscript = event.results[0][0].transcript;
+            console.log("Transcript received:", currentTranscript);
+            setTranscript(currentTranscript);
+            handleVoiceCommand(currentTranscript);
+        };
+
+        recognitionRef.current.onend = () => {
+            console.log("Speech recognition ended");
+            setIsListening(false);
+        };
+
+        recognitionRef.current.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            setIsListening(false);
+            if (event.error === 'not-allowed') {
+                setStatusMessage('Microphone access denied');
+            } else if (event.error === 'no-speech') {
+                setStatusMessage('No speech detected');
+            } else {
+                setStatusMessage('System error. Try again.');
+            }
+        };
     }, []);
 
     const speak = (text) => {
@@ -122,14 +144,30 @@ const VoiceAssistant = () => {
     };
 
     const toggleListening = () => {
+        if (!isSupported) {
+            setStatusMessage('Speech not supported in this browser');
+            setShowChat(true);
+            return;
+        }
+
         if (isListening) {
+            console.log("Stopping recognition manually...");
             recognitionRef.current?.stop();
         } else {
+            console.log("Starting recognition...");
             setTranscript('');
             setReply('');
+            setStatusMessage('Listening...');
+            setShowChat(true);
             recognitionRef.current.lang = i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
-            recognitionRef.current?.start();
-            setIsListening(true);
+
+            try {
+                recognitionRef.current?.start();
+            } catch (err) {
+                console.error("Failed to start recognition:", err);
+                setStatusMessage('System busy. Try again.');
+                setIsListening(false);
+            }
         }
     };
 
@@ -151,15 +189,21 @@ const VoiceAssistant = () => {
                             Vajra AI Assistant
                         </div>
 
+                        {statusMessage && (
+                            <div className="p-2 bg-amber-50 rounded-xl text-[10px] font-bold text-amber-700 leading-tight border border-amber-100 italic">
+                                {statusMessage}
+                            </div>
+                        )}
+
                         {transcript && (
-                            <div className="p-3 bg-slate-50 rounded-2xl text-xs font-bold text-slate-700 leading-relaxed">
+                            <div className="p-3 bg-slate-50 rounded-2xl text-xs font-bold text-slate-700 leading-relaxed border border-slate-100">
                                 <span className="text-[10px] text-slate-400 block mb-1 uppercase tracking-wider">You said:</span>
                                 "{transcript}"
                             </div>
                         )}
 
                         {reply && (
-                            <div className="p-4 bg-green-600 text-white rounded-2xl text-xs font-bold leading-relaxed shadow-lg shadow-green-600/20">
+                            <div className="p-4 bg-green-600 text-white rounded-2xl text-xs font-bold leading-relaxed shadow-lg shadow-green-600/20 border border-green-500">
                                 <span className="text-[10px] text-green-100/70 block mb-1 uppercase tracking-wider">DHARA Assistant:</span>
                                 {reply}
                             </div>
@@ -170,6 +214,11 @@ const VoiceAssistant = () => {
 
             {/* Main Mic Button with Pulse Orb */}
             <div className="relative">
+                {!isSupported && (
+                    <div className="absolute -top-12 right-0 bg-red-100 text-red-600 text-[8px] font-black uppercase px-2 py-1 rounded shadow-sm border border-red-200 whitespace-nowrap">
+                        Not Supported
+                    </div>
+                )}
                 {/* Animated Rings */}
                 {isListening && (
                     <>
