@@ -14,10 +14,13 @@ const DamageScanner = () => {
     const [scanProgress, setScanProgress] = useState(0);
     const [detectedIssues, setDetectedIssues] = useState([]);
     const [healthScore, setHealthScore] = useState(100);
-    const [scanPhase, setScanPhase] = useState('initial'); // initial, scanning, result
+    const [scanPhase, setScanPhase] = useState('selection'); // selection, initial, scanning, result
     const [cameraStream, setCameraStream] = useState(null);
     const [capturedImage, setCapturedImage] = useState(null);
     const [uploadLoading, setUploadLoading] = useState(false);
+    const [scanType, setScanType] = useState('BEFORE'); // BEFORE or AFTER
+    const [previousScan, setPreviousScan] = useState(null);
+    const [validationMessage, setValidationMessage] = useState('');
 
     // Initial Camera Setup
     const startCamera = async () => {
@@ -126,14 +129,40 @@ const DamageScanner = () => {
             }
         }
 
-        // Featureless Rejection: If too many cells are flat, it's a blank wall/paper
-        if (featurelessCells > (gridSize * gridSize * 0.75)) {
+        // 0. MACHINERY VALIDATION (Learning to say No)
+        let machineWeight = 0;
+        let skinToneWeight = 0;
+
+        // Machine-like color profiles (Reds, Cyans, Greys, Oranges)
+        // Skin-tone profiles (Warm Oranges/Pinks/Soft Browns)
+
+        for (let i = 0; i < data.length; i += 16 * step) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Detect typical skin tones: R > G > B and high saturation
+            if (r > 60 && g > 40 && b > 20 && r > g && g > b && (r - b) > 15) {
+                skinToneWeight++;
+            }
+
+            // Detect industrial colors (High saturations or neutral greys)
+            if ((Math.abs(r - g) < 20 && Math.abs(g - b) < 20) || (r > 150 && b < 100)) {
+                machineWeight++;
+            }
+        }
+
+        // Rejection Logic
+        if (skinToneWeight > machineWeight * 1.5 || featurelessCells > (gridSize * gridSize * 0.85)) {
             setDetectedIssues([]);
+            setValidationMessage("UNRECOGNIZED SUBJECT: PLEASE SCAN MACHINERY");
             setHealthScore(100);
             setScanPhase('result');
             setIsScanning(false);
             return;
         }
+
+        setValidationMessage("");
 
         // 2. FEATURE EXTRACTION (Localized Anomalies)
         let darkClusters = 0;
@@ -196,8 +225,18 @@ const DamageScanner = () => {
             });
         }
 
-        setDetectedIssues(issues);
-        const finalScore = Math.max(0, 100 - (issues.length * 15));
+        // 3. COMPARATIVE DELTA (Before vs After)
+        let finalIssues = issues;
+        if (scanType === 'AFTER' && previousScan) {
+            const prevIssueTypes = (previousScan.issues || []).map(i => i.type);
+            finalIssues = issues.map(issue => ({
+                ...issue,
+                isNew: !prevIssueTypes.includes(issue.type)
+            }));
+        }
+
+        setDetectedIssues(finalIssues);
+        const finalScore = Math.max(0, 100 - (finalIssues.filter(i => i.isNew).length * 20) - (finalIssues.filter(i => !i.isNew).length * 5));
         setHealthScore(finalScore);
         setScanPhase('result');
         setIsScanning(false);
@@ -208,7 +247,7 @@ const DamageScanner = () => {
         try {
             await damageAPI.create({
                 bookingid: id,
-                scanType: 'GENERAL', // In real app, check if before/after
+                scanType: scanType,
                 image: capturedImage,
                 healthScore,
                 issues: detectedIssues
@@ -226,13 +265,24 @@ const DamageScanner = () => {
         setCapturedImage(null);
         setDetectedIssues([]);
         setScanPhase('initial');
+        setValidationMessage('');
         startCamera();
     };
 
     useEffect(() => {
-        startCamera();
+        const fetchHistory = async () => {
+            try {
+                const res = await damageAPI.getByBooking(id);
+                const beforeScan = res.data.data.find(s => s.scanType === 'BEFORE');
+                setPreviousScan(beforeScan);
+            } catch (err) {
+                console.error("History fetch error", err);
+            }
+        };
+        fetchHistory();
+        // Camera will be started when phase transition to 'initial'
         return () => stopCamera();
-    }, []);
+    }, [id]);
 
     return (
         <div className="fixed inset-0 bg-black z-[100] flex flex-col font-mono text-cyan-400 overflow-hidden">
@@ -247,10 +297,46 @@ const DamageScanner = () => {
                     <p className="text-[10px] text-cyan-500/70 shrink-0">Bilinear Surface Analysis Engine</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    <span className="text-[8px] uppercase tracking-widest text-red-500 hidden sm:block">Real-Time Core</span>
+                    <div className="flex flex-col items-end">
+                        <span className="text-[8px] uppercase tracking-widest text-cyan-400 font-bold">{scanType || 'SCAN'} MODE</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                            <span className="text-[8px] uppercase tracking-widest text-red-500 hidden sm:block">Real-Time Core</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {/* Selection Phase */}
+            {scanPhase === 'selection' && (
+                <div className="flex-1 flex flex-col items-center justify-center p-10 bg-gradient-to-b from-black to-slate-900 z-50">
+                    <div className="max-w-md w-full text-center space-y-12">
+                        <div className="space-y-4">
+                            <ShieldAlert size={64} className="mx-auto text-cyan-500 animate-pulse" />
+                            <h2 className="text-3xl font-black uppercase tracking-widest text-white">Rental Integrity Protocols</h2>
+                            <p className="text-cyan-500/60 text-xs tracking-widest">SELECT PHASE TO INITIATE SCANNER</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6">
+                            <button
+                                onClick={() => { setScanType('BEFORE'); setScanPhase('initial'); startCamera(); }}
+                                className="group p-8 border border-cyan-500/20 rounded-[2rem] bg-black/40 hover:bg-cyan-500/10 transition-all text-left"
+                            >
+                                <h4 className="text-white font-black uppercase tracking-widest text-lg group-hover:text-cyan-400">Phase 01: Pre-Rental</h4>
+                                <p className="text-[10px] text-slate-500 mt-2">Establish baseline machine health telemetry before handover.</p>
+                            </button>
+
+                            <button
+                                onClick={() => { setScanType('AFTER'); setScanPhase('initial'); startCamera(); }}
+                                className="group p-8 border border-cyan-500/20 rounded-[2rem] bg-black/40 hover:bg-cyan-500/10 transition-all text-left"
+                            >
+                                <h4 className="text-white font-black uppercase tracking-widest text-lg group-hover:text-cyan-400">Phase 02: Post-Rental</h4>
+                                <p className="text-[10px] text-slate-500 mt-2">Validate machine integrity and identify comparative damage deltas.</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Viewfinder Area */}
             <div className="relative flex-1 bg-slate-900 overflow-hidden flex items-center justify-center">
@@ -304,16 +390,28 @@ const DamageScanner = () => {
                 {scanPhase === 'result' && detectedIssues.map((issue, idx) => (
                     <div
                         key={idx}
-                        className={`absolute z-30 p-2 border border-${issue.color}-500 bg-black/60 rounded backdrop-blur-md animate-scale-up`}
+                        className={`absolute z-30 p-2 border ${issue.isNew ? 'border-red-500 bg-red-950/40' : `border-${issue.color}-500 bg-black/60`} rounded backdrop-blur-md animate-scale-up shadow-lg`}
                         style={{ top: `${20 + (idx * 20)}%`, left: `${30 + (idx * 15)}%` }}
                     >
                         <div className="flex items-center gap-2">
-                            <AlertTriangle size={12} className={`text-${issue.color}-500`} />
-                            <span className={`text-[10px] font-black uppercase text-${issue.color}-400`}>{issue.type}</span>
+                            {issue.isNew ? <ShieldAlert size={12} className="text-red-500 animate-pulse" /> : <AlertTriangle size={12} className={`text-${issue.color}-500`} />}
+                            <span className={`text-[10px] font-black uppercase ${issue.isNew ? 'text-red-400' : `text-${issue.color}-400`}`}>
+                                {issue.isNew ? "NEW DAMAGE • " : ""}{issue.type}
+                            </span>
                         </div>
                         <p className="text-[8px] text-white/60 mt-1 uppercase tracking-tighter">{issue.location} • {issue.severity}</p>
                     </div>
                 ))}
+
+                {/* Validation Message HUD */}
+                {validationMessage && scanPhase === 'result' && (
+                    <div className="absolute inset-0 z-40 bg-red-950/60 backdrop-blur-xl flex flex-col items-center justify-center p-10 text-center animate-fade-in">
+                        <ShieldAlert size={80} className="text-red-500 mb-6 animate-bounce" />
+                        <h3 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4">Protocol Violation</h3>
+                        <p className="text-red-400 text-sm font-bold tracking-widest">{validationMessage}</p>
+                        <button onClick={reset} className="mt-10 px-8 py-3 bg-red-600 rounded-full text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-red-500 transition-all">Re-Scan Target</button>
+                    </div>
+                )}
             </div>
 
             {/* Controls HUD */}
@@ -366,8 +464,15 @@ const DamageScanner = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-fade-up">
                             <div className="bg-black/40 border border-cyan-500/20 p-8 rounded-[2rem] flex flex-col items-center justify-center relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-cyan-400/5 -translate-y-full group-hover:translate-y-0 transition-transform duration-1000" />
-                                <span className="text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-2 relative z-10">Machine Health Index</span>
+                                <span className="text-[10px] uppercase tracking-[0.4em] text-cyan-500/60 mb-2 relative z-10">
+                                    {scanType === 'AFTER' ? 'Comparative Health Index' : 'Machine Health Index'}
+                                </span>
                                 <h3 className={`text-6xl font-black tracking-tighter relative z-10 ${healthScore > 80 ? 'text-green-500' : 'text-amber-500'}`}>{healthScore}%</h3>
+                                {scanType === 'AFTER' && previousScan && (
+                                    <p className="text-[10px] font-black text-cyan-400/80 mt-2 uppercase tracking-widest">
+                                        Baseline: {previousScan.healthScore}% • Delta: {healthScore - previousScan.healthScore}%
+                                    </p>
+                                )}
                                 <p className="text-[9px] text-slate-500 mt-4 uppercase tracking-widest relative z-10">Optimal operating range: 85%+</p>
                             </div>
 
