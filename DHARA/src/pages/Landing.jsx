@@ -1,11 +1,9 @@
-import { Link, useNavigate } from 'react-router-dom';
 import {
   Users, Shield, Zap, CheckCircle, ArrowRight, Play, Globe, Menu, X, Star, Calendar, MessageSquare,
   MapPin, Clock, ShieldCheck, Heart, Languages, IndianRupee, Bot, Sparkles, Mic
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { getDashboardPath } from '../utils/navigation';
 
 const Landing = () => {
   const { t, i18n } = useTranslation();
@@ -38,7 +36,7 @@ const Landing = () => {
 
         {/* Navbar (Over Background) */}
         <nav className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 backdrop-blur-sm">
-          <Link to={getDashboardPath(user)} className="flex items-center gap-3 group cursor-pointer">
+          <Link to={getDashboardPath()} className="flex items-center gap-3 group cursor-pointer">
             <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
               <img src="/dhara_logo.png" alt="DHARA" className="h-8 w-8 object-cover rounded-full border border-green-100" />
             </div>
@@ -65,7 +63,7 @@ const Landing = () => {
             </button>
             {user ? (
               <Link
-                to={getDashboardPath(user)}
+                to={getDashboardPath()}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-bold shadow-lg text-sm uppercase tracking-wider"
               >
                 Dashboard
