@@ -104,70 +104,78 @@ const VoiceAssistant = () => {
         synthRef.speak(utterance);
     };
 
+    // --- Precision Engine Utils ---
+    const fuzzyMatch = (input, target, threshold = 0.7) => {
+        const s1 = input.toLowerCase();
+        const s2 = target.toLowerCase();
+        if (s1 === s2) return true;
+
+        let longer = s1;
+        let shorter = s2;
+        if (s1.length < s2.length) {
+            longer = s2;
+            shorter = s1;
+        }
+
+        if (longer.length === 0) return 1.0;
+
+        const costs = [];
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i === 0) costs[j] = j;
+                else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) !== s2.charAt(j - 1))
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        const similarity = (longer.length - costs[s2.length]) / longer.length;
+        return similarity >= threshold;
+    };
+
     const handleVoiceCommand = (text) => {
         const input = text.toLowerCase();
         setShowChat(true);
 
-        // --- Intelligence Engine: Intent Parsing (Fuzzy Matching) ---
+        // Keywords for High-Precision Matching
+        const intents = [
+            { id: 'dashboard', keys: ['dashboard', 'home', 'shuruat', 'mukhya', 'front', 'main', 'start'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/dashboard', msg: i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard." },
+            { id: 'bookings', keys: ['booking', 'order', 'history', 'sauda', 'booked', 'mere orders', 'list'], path: user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/bookings', msg: i18n.language === 'hi' ? "आपकी बुकिंग्स दिखा रहा हूँ।" : "Showing your bookings." },
+            { id: 'assets', keys: ['tractor', 'machine', 'rent', 'kiraya', 'sadhan', 'equipment', 'harrow', 'cultivator', 'harvester'], path: '/farmer/assets', msg: i18n.language === 'hi' ? "आप यहाँ मशीनें ढूँढ सकते हैं।" : "You can search for machines here." },
+            { id: 'maintenance', keys: ['maintenance', 'service', 'repair', 'marammat', 'checkup', 'fix'], path: '/operator/maintenance', msg: i18n.language === 'hi' ? "सर्विस रिकॉर्ड्स खुल रहे हैं।" : "Opening service records." },
+            { id: 'money', keys: ['money', 'payment', 'paisa', 'bhugtan', 'earning', 'income', 'wallet'], msg: i18n.language === 'hi' ? "पेमेंट सुरक्षित हैं। काम पूरा होने पर पैसा ट्रांसफर हो जाएगा।" : "Payments are secure via Escrow. Funds are released after the task is completed." },
+            { id: 'help', keys: ['help', 'madad', 'sahayata', 'support', 'kaise', 'how to'], msg: i18n.language === 'hi' ? "मैं आपकी नेविगेशन और सवालों में मदद कर सकता हूँ। कुछ भी पूछिए!" : "I can help you navigate and answer queries. Ask me anything!" }
+        ];
 
-        // 1. Navigation: Dashboard / Home
-        if (input.includes('dashboard') || input.includes('home') || input.includes('shuruat') || input.includes('mukhya')) {
-            const path = user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/dashboard';
-            const msg = i18n.language === 'hi' ? "डैशबोर्ड खुल रहा है।" : "Opening your dashboard.";
-            setReply(msg);
-            speak(msg);
-            setTimeout(() => navigate(path), 1500);
-            return;
-        }
+        // Match Logic
+        for (const intent of intents) {
+            const hasMatch = intent.keys.some(key => {
+                // Check if key is in input OR if fuzzy match is strong
+                return input.includes(key) || fuzzyMatch(input, key, 0.85); // High threshold for precision
+            });
 
-        // 2. Navigation: Bookings / History
-        if (input.includes('booking') || input.includes('order') || input.includes('history') || input.includes('sauda')) {
-            const path = user?.role?.toLowerCase() === 'operator' ? '/operator/dashboard' : '/farmer/bookings';
-            const msg = i18n.language === 'hi' ? "आपकी बुकिंग्स दिखा रहा हूँ।" : "Showing your bookings.";
-            setReply(msg);
-            speak(msg);
-            setTimeout(() => navigate(path), 1500);
-            return;
-        }
+            if (hasMatch) {
+                if (intent.id === 'maintenance' && user?.role?.toLowerCase() !== 'operator') {
+                    const errorMsg = i18n.language === 'hi' ? "यह सुविधा केवल मशीन मालिकों के लिए है।" : "This feature is for machine owners only.";
+                    setReply(errorMsg);
+                    speak(errorMsg);
+                    return;
+                }
 
-        // 3. Navigation: Machinery / Assets
-        if (input.includes('tractor') || input.includes('machine') || input.includes('rent') || input.includes('kiraya') || input.includes('sadhan')) {
-            const msg = i18n.language === 'hi' ? "आप यहाँ मशीनें ढूँढ सकते हैं।" : "You can search for machines here.";
-            setReply(msg);
-            speak(msg);
-            setTimeout(() => navigate('/farmer/assets'), 1500);
-            return;
-        }
-
-        // 4. Maintenance (Operator Only)
-        if (input.includes('maintenance') || input.includes('service') || input.includes('repair') || input.includes('marammat')) {
-            if (user?.role?.toLowerCase() === 'operator') {
-                const msg = i18n.language === 'hi' ? "सर्विस रिकॉर्ड्स खुल रहे हैं।" : "Opening service records.";
-                setReply(msg);
-                speak(msg);
-                setTimeout(() => navigate('/operator/maintenance'), 1500);
-            } else {
-                const msg = i18n.language === 'hi' ? "यह सुविधा केवल मशीन मालिकों के लिए है।" : "This feature is for machine owners only.";
-                setReply(msg);
-                speak(msg);
+                setReply(intent.msg);
+                speak(intent.msg);
+                if (intent.path) {
+                    setTimeout(() => navigate(intent.path), 1500);
+                }
+                return;
             }
-            return;
-        }
-
-        // 5. Payments / Escrow info
-        if (input.includes('money') || input.includes('payment') || input.includes('paisa') || input.includes('bhugtan')) {
-            const msg = i18n.language === 'hi' ? "पेमेंट सुरक्षित हैं। काम पूरा होने पर पैसा ट्रांसफर हो जाएगा।" : "Payments are secure via Escrow. Funds are released after the task is completed.";
-            setReply(msg);
-            speak(msg);
-            return;
-        }
-
-        // 6. Help
-        if (input.includes('help') || input.includes('madad') || input.includes('sahayata')) {
-            const msg = i18n.language === 'hi' ? "मैं आपकी नेविगेशन और सवालों में मदद कर सकता हूँ। कुछ भी पूछिए!" : "I can help you navigate and answer queries. Ask me anything!";
-            setReply(msg);
-            speak(msg);
-            return;
         }
 
         // Default 
