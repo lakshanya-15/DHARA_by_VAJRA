@@ -28,7 +28,8 @@ const Sidebar = () => {
   };
 
   const getLinks = () => {
-    switch (user.role) {
+    const role = user.role?.toLowerCase();
+    switch (role) {
       case 'farmer':
         return [
           { name: t('sidebar.dashboard'), path: '/farmer/dashboard', icon: <LayoutDashboard /> },
@@ -92,7 +93,7 @@ const Sidebar = () => {
               <div>
                 <p className="font-bold text-slate-800 text-sm tracking-tight">{user.name}</p>
                 <p className="text-[8px] text-green-700 uppercase font-bold tracking-[0.2em] mt-0.5">
-                  {user.role === 'farmer' ? t('common.farmer') : user.role === 'operator' ? t('common.operator') : t('common.admin')}
+                  {user.role?.toLowerCase() === 'farmer' ? t('common.farmer') : user.role?.toLowerCase() === 'operator' ? t('common.operator') : t('common.admin')}
                 </p>
               </div>
             </div>

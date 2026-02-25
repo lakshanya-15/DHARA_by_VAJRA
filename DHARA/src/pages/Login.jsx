@@ -21,7 +21,8 @@ const Login = () => {
     try {
       const result = await login(email, password);
       if (result.success) {
-        if (result.user.role === 'OPERATOR') {
+        const role = result.user.role?.toLowerCase();
+        if (role === 'operator') {
           navigate('/operator/dashboard');
         } else {
           navigate('/farmer/dashboard');

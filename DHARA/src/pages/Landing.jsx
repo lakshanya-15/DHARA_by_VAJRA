@@ -17,9 +17,10 @@ const Landing = () => {
 
   const getDashboardPath = () => {
     if (!user) return '/login';
-    if (user.role === 'farmer') return '/farmer/dashboard';
-    if (user.role === 'operator') return '/operator/dashboard';
-    if (user.role === 'admin') return '/admin/dashboard';
+    const role = user.role?.toLowerCase();
+    if (role === 'farmer') return '/farmer/dashboard';
+    if (role === 'operator') return '/operator/dashboard';
+    if (role === 'admin') return '/admin/dashboard';
     return '/';
   };
 
