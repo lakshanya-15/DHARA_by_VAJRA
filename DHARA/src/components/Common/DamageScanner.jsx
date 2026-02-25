@@ -84,20 +84,110 @@ const DamageScanner = () => {
     };
 
     const analyzeImage = () => {
-        // Advanced Computer Vision Simulation (Pixel Logic)
-        const possibleIssues = [
-            { type: 'Scratch', severity: 'Low', location: 'Body Panel', color: 'blue' },
-            { type: 'Structural Stress', severity: 'Medium', location: 'Frame Joint', color: 'amber' },
-            { type: 'Surface Rust', severity: 'Low', location: 'Exterior Edge', color: 'amber' },
-            { type: 'Component Wear', severity: 'High', location: 'Moving Part', color: 'red' }
-        ];
+        /**
+         * REAL PIXEL ANALYSIS ENGINE (Vajra Vision Core)
+         * We use the canvas to extract pixel data for heuristic-based computer vision.
+         */
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
 
-        // We "detect" 1-3 issues based on some randomness but make it look deterministic
-        const count = Math.floor(Math.random() * 2) + 1;
-        const issues = possibleIssues.sort(() => 0.5 - Math.random()).slice(0, count);
+        let rSum = 0, gSum = 0, bSum = 0;
+        let edgeIntensity = 0;
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Heuristic Counters
+        let darkClusters = 0; // Potential Oil Leaks
+        let rustClusters = 0; // Potential Corrosion
+
+        // Sampling pixel data (Skipping to keep performance high)
+        const step = 4;
+        for (let i = 0; i < data.length; i += 4 * step) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            rSum += r; gSum += g; bSum += b;
+
+            // 1. Detect Dark Blobs (Oil/Leaks)
+            // Near black: low RGB values
+            if (r < 40 && g < 40 && b < 40) darkClusters++;
+
+            // 2. Detect Rust (Orange/Brown Tones)
+            // Rust hue: R > G and G > B, with high R/B ratio
+            if (r > 120 && g > 60 && r > g * 1.5 && g > b * 1.2) rustClusters++;
+
+            // 3. Simple Edge Detection (Vertical Gradient)
+            if (i + 4 * width < data.length) {
+                const nextR = data[i + 4 * width];
+                const diff = Math.abs(r - nextR);
+                if (diff > 50) edgeIntensity++;
+            }
+        }
+
+        const totalSamples = data.length / (4 * step);
+        const avgR = rSum / totalSamples;
+        const avgG = gSum / totalSamples;
+        const avgB = bSum / totalSamples;
+
+        // Calculate Contrast (Standard Deviation)
+        let sqDiffSum = 0;
+        const avgGray = (avgR + avgG + avgB) / 3;
+        for (let i = 0; i < data.length; i += 4 * step) {
+            const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            sqDiffSum += Math.pow(gray - avgGray, 2);
+        }
+        const stdDev = Math.sqrt(sqDiffSum / totalSamples);
+
+        // MAP METRICS TO REAL ISSUES
+        const issues = [];
+
+        // Blank Image Check: If contrast is very low, it's a blank wall/paper
+        if (stdDev < 15) {
+            // No issues detected for blank images
+            setDetectedIssues([]);
+            setHealthScore(100);
+            setScanPhase('result');
+            setIsScanning(false);
+            return;
+        }
+
+        // Edge Detection Threshold: Scratches/Dents
+        // Higher edge density suggests surface damage or complex grain
+        if (edgeIntensity / totalSamples > 0.08) {
+            issues.push({
+                type: 'Surface Scratch',
+                severity: 'Low',
+                location: 'Exterior Panel',
+                color: 'blue'
+            });
+        }
+
+        // Dark Blob Threshold: Oil/Fluid Leaks
+        if (darkClusters / totalSamples > 0.15) {
+            issues.push({
+                type: 'Fluid/Oil Leak',
+                severity: 'Critical',
+                location: 'Core Component',
+                color: 'red'
+            });
+        }
+
+        // Rust Threshold
+        if (rustClusters / totalSamples > 0.05) {
+            issues.push({
+                type: 'Surface Corrosion',
+                severity: 'Medium',
+                location: 'Chassis/Joint',
+                color: 'amber'
+            });
+        }
 
         setDetectedIssues(issues);
-        setHealthScore(100 - (issues.length * 15));
+        const finalScore = Math.max(0, 100 - (issues.length * 18));
+        setHealthScore(finalScore);
         setScanPhase('result');
         setIsScanning(false);
     };
@@ -185,15 +275,15 @@ const DamageScanner = () => {
                     <div className="absolute top-40 left-1/2 -translate-x-1/2 w-80 z-30 space-y-4 animate-fade-in">
                         <div className="bg-black/80 border border-cyan-400 p-6 rounded-2xl backdrop-blur-xl">
                             <div className="flex justify-between items-end mb-4">
-                                <span className="text-[10px] uppercase tracking-[0.3em] font-black">Neural Processing</span>
+                                <span className="text-[10px] uppercase tracking-[0.3em] font-black">Telemetry Processing</span>
                                 <span className="text-xl font-black">{scanProgress}%</span>
                             </div>
                             <div className="h-2 bg-cyan-900 rounded-full overflow-hidden shadow-inner">
                                 <div className="h-full bg-cyan-400 shadow-[0_0_20px_#22d3ee] transition-all" style={{ width: `${scanProgress}%` }} />
                             </div>
                             <div className="mt-4 flex flex-col gap-1">
-                                <p className="text-[8px] uppercase tracking-widest text-cyan-400/60 transition-all">Analyzing topology...</p>
-                                <p className="text-[8px] uppercase tracking-widest text-cyan-400/60">Cross-referencing machine logs...</p>
+                                <p className="text-[8px] uppercase tracking-widest text-cyan-400/60 transition-all">Analyzing surface telemetry...</p>
+                                <p className="text-[8px] uppercase tracking-widest text-cyan-400/60">Pixel-depth calculation...</p>
                             </div>
                         </div>
                     </div>
