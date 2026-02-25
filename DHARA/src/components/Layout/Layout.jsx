@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { ArrowLeft } from 'lucide-react';
+import VoiceAssistant from '../Common/VoiceAssistant';
 
 const Layout = () => {
   const { user } = useAuth();
@@ -36,6 +37,9 @@ const Layout = () => {
           <Outlet />
         </div>
       </main>
+
+      {/* Persistent Voice AI Assistant */}
+      <VoiceAssistant />
     </div>
   );
 };
