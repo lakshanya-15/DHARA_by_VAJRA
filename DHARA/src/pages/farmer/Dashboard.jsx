@@ -317,6 +317,14 @@ const FarmerDashboard = () => {
 
             {/* Booking Modal Integration */}
             {selectedAsset && (
+                <BookingModal
+                    asset={selectedAsset}
+                    onClose={() => setSelectedAsset(null)}
+                    onSuccess={() => {
+                        setSelectedAsset(null);
+                        fetchData();
+                        setActiveTab('bookings'); // Take them to their schedule after booking
+                    }}
                 />
             )}
 
@@ -326,7 +334,6 @@ const FarmerDashboard = () => {
                     onClose={() => { setIsUpdateModalOpen(false); setSelectedBooking(null); }}
                     onSuccess={() => { setIsUpdateModalOpen(false); setSelectedBooking(null); fetchData(); }}
                 />
-            )}
             )}
         </div>
     );
