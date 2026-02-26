@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
+import { Edit, Trash2 } from 'lucide-react';
 
 const FarmerDashboard = () => {
     const { t } = useTranslation();
@@ -23,6 +24,8 @@ const FarmerDashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [radius, setRadius] = useState(25);
     const [selectedAsset, setSelectedAsset] = useState(null);
+    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -270,14 +273,37 @@ const FarmerDashboard = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-8">
-                                                <div className="text-right">
+                                            <div className="flex items-center gap-6">
+                                                <div className="text-right hidden sm:block">
                                                     <p className="text-xl font-black text-slate-800">₹{booking.Asset?.hourlyRate || 0}</p>
                                                     <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('farmer.hourlyYield')}</p>
                                                 </div>
-                                                <div className={`px-5 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wider
-                                                    ${booking.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                    {booking.status}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <div className={`px-4 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider
+                                                        ${booking.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : (booking.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700')}`}>
+                                                        {booking.status}
+                                                    </div>
+                                                    {booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED' && (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => { setSelectedBooking(booking); setIsUpdateModalOpen(true); }}
+                                                                className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-all border border-slate-100"
+                                                            >
+                                                                <Edit size={14} />
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (window.confirm("Cancel this booking?")) {
+                                                                        await bookingsAPI.cancel(booking.id);
+                                                                        fetchData();
+                                                                    }
+                                                                }}
+                                                                className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-all border border-red-500/10"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -291,15 +317,16 @@ const FarmerDashboard = () => {
 
             {/* Booking Modal Integration */}
             {selectedAsset && (
-                <BookingModal
-                    asset={selectedAsset}
-                    onClose={() => setSelectedAsset(null)}
-                    onSuccess={() => {
-                        setSelectedAsset(null);
-                        fetchData();
-                        setActiveTab('bookings'); // Take them to their schedule after booking
-                    }}
                 />
+            )}
+
+            {isUpdateModalOpen && selectedBooking && (
+                <UpdateModal
+                    booking={selectedBooking}
+                    onClose={() => { setIsUpdateModalOpen(false); setSelectedBooking(null); }}
+                    onSuccess={() => { setIsUpdateModalOpen(false); setSelectedBooking(null); fetchData(); }}
+                />
+            )}
             )}
         </div>
     );
@@ -437,6 +464,59 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                             ${loading ? 'bg-slate-300 cursor-not-allowed' : 'bg-green-600 text-white shadow-green-600/30 hover:shadow-green-600/40 active:scale-95'}`}
                     >
                         {loading ? t('farmer.reserveMachineModal.transmitting') : t('farmer.reserveMachineModal.confirm')}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const UpdateModal = ({ booking, onClose, onSuccess }) => {
+    const { t } = useTranslation();
+    const [date, setDate] = useState(booking.startDate);
+    const [time, setTime] = useState(booking.bookingTime || '09:00');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await bookingsAPI.update(booking.id, { startDate: date, bookingTime: time });
+            onSuccess();
+        } catch (err) {
+            console.error("Update failed", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[3rem] max-w-md w-full p-10 shadow-2xl relative">
+                <button onClick={onClose} className="absolute top-8 right-8 text-slate-400 hover:text-slate-600">
+                    <X size={24} />
+                </button>
+                <h3 className="text-2xl font-black text-slate-800 mb-6 uppercase tracking-tight">Adjust Schedule</h3>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">New Date</label>
+                        <input
+                            type="date" required value={date} onChange={(e) => setDate(e.target.value)}
+                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-green-600 font-bold"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">New Time</label>
+                        <input
+                            type="time" required value={time} onChange={(e) => setTime(e.target.value)}
+                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-green-600 font-bold"
+                        />
+                    </div>
+                    <button
+                        type="submit" disabled={loading}
+                        className="w-full py-4 bg-green-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-lg overflow-hidden relative group active:scale-95"
+                    >
+                        {loading ? "Transmitting..." : "Update Reserve"}
                     </button>
                 </form>
             </div>

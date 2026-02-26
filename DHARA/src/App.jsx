@@ -21,7 +21,7 @@ import AddAsset from './pages/operator/AddAsset';
 import MyAssets from './pages/operator/MyAssets';
 import OperatorAnalytics from './pages/operator/Analytics';
 import MaintenanceLogs from './pages/operator/MaintenanceLogs';
-import DamageScanner from './components/Common/DamageScanner';
+import MaintenanceLogs from './pages/operator/MaintenanceLogs';
 
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -68,8 +68,7 @@ function App() {
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
             </Route>
 
-            {/* Universal AI Features */}
-            <Route path="/scan/:id" element={<DamageScanner />} />
+            {/* Universal AI Features removed */}
 
           </Route>
 

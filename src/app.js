@@ -11,7 +11,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
-const damageScannerRoutes = require('./routes/damageScannerRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const config = require('./config');
 
@@ -67,7 +67,7 @@ app.use('/assets', assetRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/maintenance', maintenanceRoutes);
-app.use('/damage-scan', damageScannerRoutes);
+app.use('/maintenance', maintenanceRoutes);
 app.use('/admin', adminRoutes);
 
 // Health check (optional, useful for demos)

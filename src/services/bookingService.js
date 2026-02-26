@@ -152,6 +152,52 @@ async function listAllForAdmin() {
   return bookings.map(toApiBooking);
 }
 
+async function updateBooking(id, { startDate, bookingTime, notes }) {
+  const bookingDate = new Date(startDate);
+  bookingDate.setHours(0, 0, 0, 0);
+
+  const updated = await prisma.booking.update({
+    where: { id },
+    data: {
+      bookingdate: bookingDate,
+      bookingTime,
+    },
+    include: {
+      Asset: { include: { User: true } },
+      User: true,
+    }
+  });
+
+  return toApiBooking(updated);
+}
+
+async function cancelBooking(id) {
+  const booking = await prisma.booking.update({
+    where: { id },
+    data: { status: 'CANCELLED' },
+    include: { Asset: true }
+  });
+
+  // Restore asset availability
+  if (booking.assetid) {
+    await prisma.asset.update({
+      where: { id: booking.assetid },
+      data: { availability: true }
+    });
+  }
+
+  // Notify operator
+  if (booking.Asset?.ownerid) {
+    await notificationService.createNotification({
+      userId: booking.Asset.ownerid,
+      message: `Booking for ${booking.Asset.name} has been CANCELLED.`,
+      type: 'NOTIFICATION',
+    });
+  }
+
+  return toApiBooking(booking);
+}
+
 module.exports = {
   createBooking,
   findById,
@@ -159,4 +205,6 @@ module.exports = {
   listByOperator,
   listAllForAdmin,
   refreshBookingStatuses,
+  updateBooking,
+  cancelBooking,
 };

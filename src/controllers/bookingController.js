@@ -48,4 +48,22 @@ async function getMy(req, res, next) {
   }
 }
 
-module.exports = { create, getMy };
+async function update(req, res, next) {
+  try {
+    const booking = await bookingService.updateBooking(req.params.id, req.body);
+    return success(res, booking);
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function cancel(req, res, next) {
+  try {
+    const booking = await bookingService.cancelBooking(req.params.id);
+    return success(res, booking);
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { create, getMy, update, cancel };
