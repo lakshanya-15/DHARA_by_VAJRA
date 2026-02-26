@@ -1,6 +1,7 @@
 /**
  * Express app - routes and middlewares.
  * Integration points: auth, assets, bookings, admin routes; global error handler.
+ * Deployment Heartbeat: 2026-02-26
  */
 const express = require('express');
 const cors = require('cors');
