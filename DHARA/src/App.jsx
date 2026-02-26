@@ -15,6 +15,7 @@ import Assets from './pages/farmer/Assets';
 import Bookings from './pages/farmer/Bookings';
 import FarmerDashboard from './pages/farmer/Dashboard';
 import FarmerCalendar from './pages/farmer/Calendar';
+import AssetDetail from './pages/farmer/AssetDetail';
 
 import OperatorDashboard from './pages/operator/Dashboard';
 import AddAsset from './pages/operator/AddAsset';
@@ -52,6 +53,7 @@ function App() {
               <Route path="/farmer/assets" element={<Assets />} />
               <Route path="/farmer/bookings" element={<Bookings />} />
               <Route path="/farmer/calendar" element={<FarmerCalendar />} />
+              <Route path="/farmer/asset/:id" element={<AssetDetail />} />
             </Route>
 
             {/* Operator Routes */}

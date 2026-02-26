@@ -17,6 +17,7 @@ model Asset {
   category           AssetCategory    @default(SOIL_PREPARATION)
   priceperday        Decimal          @db.Decimal(10, 2)
   availability       Boolean?         @default(true)
+  images             String[]         @default([])
   ownerid            String           @db.Uuid
   maintenanceDueDate DateTime?        @db.Date
   createdat          DateTime?        @default(now()) @db.Timestamp(6)

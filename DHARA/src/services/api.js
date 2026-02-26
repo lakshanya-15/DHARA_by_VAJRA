@@ -14,7 +14,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('rural_uber_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token} `;
     }
     return config;
   },
@@ -31,9 +31,12 @@ export const authAPI = {
 export const assetsAPI = {
   getAll: (params) => api.get('/assets', { params }),
   create: (assetData) => api.post('/assets', assetData),
-  getById: (id) => api.get(`/assets/${id}`),
-  update: (id, data) => api.patch(`/assets/${id}`, data),
-  delete: (id) => api.delete(`/assets/${id}`),
+  getById: (id) => api.get(`/ assets / ${id} `),
+  update: (id, data) => api.patch(`/ assets / ${id} `, data),
+  delete: (id) => api.delete(`/ assets / ${id} `),
+  uploadImages: (formData) => api.post('/assets/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 export const bookingsAPI = {
@@ -45,7 +48,7 @@ export const bookingsAPI = {
 
 export const notificationsAPI = {
   getAll: () => api.get('/notifications'),
-  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAsRead: (id) => api.patch(`/ notifications / ${id}/read`),
 };
 
 export const maintenanceAPI = {

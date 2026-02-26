@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Upload, Info, Calculator, Percent } from 'lucide-react';
+import { Upload, Info, Calculator, Percent, X, ImagePlus, FileText } from 'lucide-react';
 import { assetsAPI } from '../../services/api';
 import { calculateBaseCost, calculateFinalPrice } from '../../utils/pricingConfig';
 
@@ -17,6 +17,11 @@ const AddAsset = () => {
     description: '',
     purchaseDate: new Date().toISOString().split('T')[0]
   });
+  
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
+  const fileInputRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState('');
@@ -25,11 +30,51 @@ const AddAsset = () => {
   const baseCost = useMemo(() => calculateBaseCost(formData.category, formData.purchaseDate), [formData.category, formData.purchaseDate]);
   const finalPrice = useMemo(() => calculateFinalPrice(baseCost, formData.margin), [baseCost, formData.margin]);
 
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Limit to 5 images max
+    const newFiles = [...selectedImages, ...files].slice(0, 5);
+    setSelectedImages(newFiles);
+
+    // Create preview URLs
+    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    setImagePreviewUrls(newPreviews);
+  };
+
+  const removeImage = (index) => {
+    const newFiles = [...selectedImages];
+    newFiles.splice(index, 1);
+    setSelectedImages(newFiles);
+
+    const newPreviews = [...imagePreviewUrls];
+    newPreviews.splice(index, 1);
+    setImagePreviewUrls(newPreviews);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
+      let uploadedImageUrls = [];
+      
+      // Step 1: Upload images if any are selected
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        selectedImages.forEach(file => {
+          formData.append('images', file);
+        });
+        
+        const uploadRes = await assetsAPI.uploadImages(formData);
+        if (uploadRes.data?.success) {
+          uploadedImageUrls = uploadRes.data.data.images;
+        }
+      }
+
+      // Step 2: Create the asset with the image URLs
       await assetsAPI.create({
         name: formData.name,
         type: formData.type,
@@ -37,11 +82,12 @@ const AddAsset = () => {
         hourlyRate: finalPrice,
         description: formData.description,
         purchaseDate: formData.purchaseDate,
+        images: uploadedImageUrls,
       });
       navigate('/operator/dashboard');
     } catch (err) {
       console.error("Failed to add asset", err);
-      setError(err.response?.data?.error || t('common.error'));
+      setError(err.response?.data?.error || err.response?.data?.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -143,6 +189,79 @@ const AddAsset = () => {
                   placeholder="Village, District"
                 />
               </div>
+            </div>
+
+            {/* Description Field */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">
+                Machine Details & Performance Capabilities
+              </label>
+              <div className="relative">
+                <FileText size={18} className="absolute top-4 left-5 text-gray-400" />
+                <textarea
+                  name="description"
+                  rows={4}
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 outline-none font-bold text-gray-800 transition-all shadow-inner resize-none"
+                  placeholder="Describe your machine's horsepower, recent maintenance, attachable implements, and suitability for local terrain..."
+                />
+              </div>
+            </div>
+
+            {/* Image Upload Gallery (Airbnb Style) */}
+            <div>
+              <div className="flex justify-between items-end mb-2 px-1">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Photo Gallery
+                </label>
+                <span className="text-[10px] font-bold text-gray-400">{selectedImages.length} / 5</span>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Upload Button Box */}
+                {selectedImages.length < 5 && (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 bg-gray-50 rounded-2xl hover:bg-green-50 hover:border-green-400 hover:text-green-600 transition-all cursor-pointer group"
+                  >
+                    <ImagePlus size={28} className="text-gray-400 group-hover:text-green-500 transition-colors" />
+                    <span className="text-[9px] font-black uppercase text-gray-400 group-hover:text-green-600 tracking-widest text-center px-2">Add Photo</span>
+                  </div>
+                )}
+                
+                {/* Hidden File Input */}
+                <input 
+                  type="file"
+                  multiple
+                  accept="image/jpeg, image/png, image/webp"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+
+                {/* Previews */}
+                {imagePreviewUrls.map((url, idx) => (
+                  <div key={idx} className="aspect-square relative rounded-2xl overflow-hidden group border border-gray-200 shadow-sm">
+                    <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button 
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 hover:scale-110 shadow-lg transition-all"
+                      >
+                        <X size={16} strokeWidth={3} />
+                      </button>
+                    </div>
+                    {idx === 0 && (
+                      <div className="absolute top-2 left-2 bg-green-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-md">
+                        Cover Image
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] font-bold text-gray-400 mt-2 px-1">Upload high quality, well-lit photos. Allowed: JPG, PNG, WEBP.</p>
             </div>
 
             {/* Price Algorithm Section */}
