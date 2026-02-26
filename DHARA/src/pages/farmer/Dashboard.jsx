@@ -178,46 +178,48 @@ const FarmerDashboard = () => {
                             {/* Machinery Grid - Clean & Elegant */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredAssets.map((asset) => (
-                                    <div key={asset.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-lg transition-all duration-300">
-                                        <div className="h-56 bg-slate-50 p-6 relative flex items-center justify-center">
+                                    <div
+                                        key={asset.id}
+                                        onClick={() => navigate(`/farmer/asset/${asset.id}`)}
+                                        className="bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col"
+                                    >
+                                        <div className="h-56 bg-slate-100 relative overflow-hidden flex items-center justify-center">
                                             {!asset.availability && (
                                                 <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
                                                     <span className="bg-white/90 px-4 py-2 rounded-xl text-xs font-bold text-slate-900 uppercase tracking-widest">{t('farmer.reserved')}</span>
                                                 </div>
                                             )}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             <img
-                                                src={asset.image || getAssetImage(asset.type)}
+                                                src={(asset.images && asset.images.length > 0) ? asset.images[0] : (asset.image || getAssetImage(asset.type))}
                                                 alt={asset.name}
-                                                className="h-full w-full object-contain relative z-10 drop-shadow-md group-hover:scale-105 transition-transform duration-500"
+                                                className={`h-full w-full relative z-0 transition-transform duration-700
+                                                    ${(asset.images && asset.images.length > 0) ? 'object-cover group-hover:scale-105' : 'object-contain p-8 group-hover:scale-110 drop-shadow-md'}
+                                                `}
                                             />
                                         </div>
 
-                                        <div className="p-6">
-                                            <div className="flex justify-between items-start mb-4">
+                                        <div className="p-5 flex-1 flex flex-col">
+                                            <div className="flex justify-between items-start mb-3">
                                                 <div>
-                                                    <h4 className="font-bold text-slate-800 text-lg mb-1">{asset.name}</h4>
-                                                    <div className="flex items-center gap-2 text-slate-400">
-                                                        <MapPin size={12} />
-                                                        <span className="text-xs font-medium uppercase tracking-wider">{asset.location || 'Local Hub'}</span>
+                                                    <h4 className="font-bold text-slate-800 text-lg leading-tight group-hover:text-green-700 transition-colors line-clamp-1">{asset.name}</h4>
+                                                    <div className="flex items-center gap-1.5 text-slate-400 mt-1">
+                                                        <MapPin size={12} className="shrink-0" />
+                                                        <span className="text-xs font-semibold uppercase tracking-wider truncate">{asset.location || 'Local Hub'}</span>
                                                     </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-xl font-black text-green-600">₹{asset.hourlyRate}</p>
-                                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">per hour</p>
                                                 </div>
                                             </div>
 
-                                            <button
-                                                onClick={() => setSelectedAsset(asset)}
-                                                disabled={!asset.availability}
-                                                className={`w-full py-3.5 rounded-xl font-semibold text-sm uppercase tracking-wider transition-all
-                                                          ${asset.availability
-                                                        ? 'bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-600/10 active:scale-95'
-                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                    }`}
-                                            >
-                                                {asset.availability ? t('farmer.reserveMachinery') : t('farmer.unavailable')}
-                                            </button>
+                                            <div className="mt-auto pt-4 border-t border-slate-50 flex justify-between items-end">
+                                                <div>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Rental Rate</span>
+                                                    <span className="text-xl font-black text-slate-900 tracking-tight">₹{asset.hourlyRate}</span>
+                                                    <span className="text-xs font-bold text-slate-400">/{t('operator.perHour')}</span>
+                                                </div>
+                                                <div className="bg-slate-50 p-2.5 rounded-xl group-hover:bg-green-500 group-hover:text-white text-slate-400 transition-colors">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
