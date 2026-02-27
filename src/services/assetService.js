@@ -4,9 +4,14 @@
  */
 const prisma = require('../config/prisma');
 const bookingService = require('./bookingService');
+const scoringService = require('./scoringService');
 
-function toApiAsset(asset) {
+function toApiAsset(asset, userSegment = 'NEW') {
   if (!asset) return null;
+  const originalRate = Number(asset.priceperday) || 0;
+  const multiplier = scoringService.getDiscountMultiplier(userSegment);
+  const personalizedRate = Math.round(originalRate * multiplier);
+
   return {
     id: asset.id,
     operatorId: asset.ownerid,
@@ -14,14 +19,18 @@ function toApiAsset(asset) {
     type: asset.type,
     description: '', // not in dharaa schema
     category: asset.category,
-    hourlyRate: Number(asset.priceperday) || 0,
+    attachments: asset.attachments || [],
+    hourlyRate: personalizedRate,
+    originalRate: personalizedRate < originalRate ? originalRate : null,
     availability: asset.availability ?? true,
     location: asset.User ? `${asset.User.village || ''}, ${asset.User.district || ''}`.replace(/^, |, $/, '') : 'Local Area',
     createdAt: asset.createdat?.toISOString?.() ?? asset.createdat,
+    operatorSegment: asset.User ? asset.User.segment : 'NEW',
+    operatorScore: asset.User ? asset.User.behaviorScore : 0
   };
 }
 
-async function createAsset({ operatorId, name, type, category, description, hourlyRate }) {
+async function createAsset({ operatorId, name, type, category, description, hourlyRate, attachments }) {
   const asset = await prisma.asset.create({
     data: {
       ownerid: operatorId,
@@ -30,11 +39,10 @@ async function createAsset({ operatorId, name, type, category, description, hour
       category: category || 'OTHER',
       priceperday: Number(hourlyRate) || 0,
       availability: true,
+      attachments: attachments || [],
     },
     include: { User: true }
   });
-
-  // Initial maintenance log creation removed as requested for manual entry flow.
 
   return toApiAsset(asset);
 }
@@ -47,7 +55,7 @@ async function findById(id) {
   return toApiAsset(asset);
 }
 
-async function listAll(filters = {}) {
+async function listAll(filters = {}, userSegment = 'NEW') {
   await bookingService.refreshBookingStatuses();
   const where = {};
   if (filters.operatorId) where.ownerid = filters.operatorId;
@@ -57,7 +65,13 @@ async function listAll(filters = {}) {
     where,
     include: { User: true, Booking: true }
   });
-  return assets.map(toApiAsset);
+
+  // Sort by operatorScore if it's for farmers (i.e. not filtering by operatorId)
+  if (!filters.operatorId) {
+    assets.sort((a, b) => (b.User?.behaviorScore || 0) - (a.User?.behaviorScore || 0));
+  }
+
+  return assets.map(a => toApiAsset(a, userSegment));
 }
 
 async function listAllForAdmin() {
@@ -74,6 +88,7 @@ async function updateAsset(id, data) {
   if (data.category) updateData.category = data.category;
   if (data.hourlyRate !== undefined) updateData.priceperday = Number(data.hourlyRate);
   if (data.availability !== undefined) updateData.availability = data.availability;
+  if (data.attachments !== undefined) updateData.attachments = data.attachments;
 
   const asset = await prisma.asset.update({
     where: { id },

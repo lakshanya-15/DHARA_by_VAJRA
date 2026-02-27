@@ -15,6 +15,7 @@ const AddAsset = () => {
     margin: 0.20, // Default 20%
     location: '',
     description: '',
+    attachments: '',
     purchaseDate: new Date().toISOString().split('T')[0]
   });
   const [loading, setLoading] = useState(false);
@@ -37,6 +38,7 @@ const AddAsset = () => {
         hourlyRate: finalPrice,
         description: formData.description,
         purchaseDate: formData.purchaseDate,
+        attachments: formData.attachments ? formData.attachments.split(',').map(s => s.trim()) : [],
       });
       navigate('/operator/dashboard');
     } catch (err) {
@@ -141,6 +143,18 @@ const AddAsset = () => {
                   onChange={handleChange}
                   className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 outline-none font-bold text-gray-800 transition-all shadow-inner"
                   placeholder="Village, District"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Attachments / Implements (Separate with commas)</label>
+                <input
+                  type="text"
+                  name="attachments"
+                  value={formData.attachments}
+                  onChange={handleChange}
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 outline-none font-bold text-gray-800 transition-all shadow-inner"
+                  placeholder="e.g. Plough, Seeder, Trailer"
                 />
               </div>
             </div>

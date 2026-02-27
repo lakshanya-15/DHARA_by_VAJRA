@@ -25,47 +25,55 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (phone, password) => {
     try {
-      const response = await authAPI.login(email, password);
-      // Backend returns { success: true, data: { token, user } }
+      const response = await authAPI.login(phone, password);
       const { token, user: userData } = response.data.data;
-
       localStorage.setItem('rural_uber_user', JSON.stringify(userData));
       localStorage.setItem('rural_uber_token', token);
-
       setUser(userData);
       return { success: true, user: userData };
     } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
-      return {
-        success: false,
-        message: error.response?.data?.error || "Login failed"
-      };
+      return { success: false, message: error.response?.data?.error || "Login failed" };
     }
   };
 
-  const register = async (name, email, password, role) => {
+  const requestOTP = async (phone) => {
     try {
-      const response = await authAPI.register(name, email, password, role);
+      const response = await authAPI.requestOTP(phone);
+      return { success: true, message: response.data.data.message };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.error || "Failed to send OTP" };
+    }
+  };
 
-      let userData = null;
-      // If the backend returns a token immediately:
-      if (response.data.data?.token) {
-        const { token, user } = response.data.data;
-        userData = user;
-        localStorage.setItem('rural_uber_user', JSON.stringify(userData));
-        localStorage.setItem('rural_uber_token', token);
-        setUser(userData);
-      }
-
+  const verifyOTP = async (phone, otp) => {
+    try {
+      const response = await authAPI.verifyOTP(phone, otp);
+      const { token, user: userData } = response.data.data;
+      localStorage.setItem('rural_uber_user', JSON.stringify(userData));
+      localStorage.setItem('rural_uber_token', token);
+      setUser(userData);
       return { success: true, user: userData };
     } catch (error) {
-      console.error("Registration failed:", error.response?.data || error.message);
-      return {
-        success: false,
-        message: error.response?.data?.error || "Registration failed"
-      };
+      return { success: false, message: error.response?.data?.error || "Invalid OTP" };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await authAPI.register(userData);
+      let userDataOut = null;
+      if (response.data.data?.token) {
+        const { token, user } = response.data.data;
+        userDataOut = user;
+        localStorage.setItem('rural_uber_user', JSON.stringify(userDataOut));
+        localStorage.setItem('rural_uber_token', token);
+        setUser(userDataOut);
+      }
+      return { success: true, user: userDataOut };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.error || "Registration failed" };
     }
   };
 
@@ -79,6 +87,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    requestOTP,
+    verifyOTP,
     register,
     logout
   };

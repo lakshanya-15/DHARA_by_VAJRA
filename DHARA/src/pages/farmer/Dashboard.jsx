@@ -1,13 +1,17 @@
 import { useState, useEffect, isValidElement, cloneElement } from 'react';
-import { assetsAPI, bookingsAPI } from '../../services/api';
+import { assetsAPI, bookingsAPI, authAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import {
     Search, MapPin, Calendar, Clock, CheckCircle,
-    User as UserIcon, ShoppingCart,
-    Wallet, Filter, X, ArrowRight, Info, Calculator
+    User as UserIcon, ShoppingCart, Phone,
+    Wallet, Filter, X, ArrowRight, Info, Calculator, Activity
 } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
+import FarmerCalendar from './Calendar';
+import ReviewModal from './ReviewModal';
+import DisputeModal from './DisputeModal';
+import { Star, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 const FarmerDashboard = () => {
     const { t } = useTranslation();
@@ -17,22 +21,30 @@ const FarmerDashboard = () => {
     const [bookings, setBookings] = useState([]);
     // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(true);
+    const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+    const [selectedBookingForDispute, setSelectedBookingForDispute] = useState(null);
     // eslint-disable-next-line no-unused-vars
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [radius, setRadius] = useState(25);
     const [selectedAsset, setSelectedAsset] = useState(null);
+    const [walletBalance, setWalletBalance] = useState(user?.walletBalance || 0);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [assetsRes, bookingsRes] = await Promise.all([
+            const [assetsRes, bookingsRes, profileRes] = await Promise.all([
                 assetsAPI.getAll(),
-                bookingsAPI.getMyBookings()
+                bookingsAPI.getMyBookings(),
+                authAPI.me()
             ]);
             setAssets(assetsRes.data.data || []);
             setBookings(bookingsRes.data.data || []);
+            if (profileRes.data.success) {
+                // If we had a setUser from context we'd use it, for now we can just show the value
+                setWalletBalance(profileRes.data.data.walletBalance);
+            }
         } catch (err) {
             console.error("Dashboard fetch error", err);
         } finally {
@@ -50,7 +62,8 @@ const FarmerDashboard = () => {
     // Filter Logic
     const filteredAssets = assets.filter((asset) => {
         const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (asset.location && asset.location.toLowerCase().includes(searchTerm.toLowerCase()));
+            (asset.location && asset.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (asset.attachments && asset.attachments.some(a => a.toLowerCase().includes(searchTerm.toLowerCase())));
         const matchesCategory = selectedCategory === 'All' || asset.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
@@ -85,13 +98,32 @@ const FarmerDashboard = () => {
                         {t('farmer.welcomeMessage', { name: user?.name })}
                     </p>
                 </div>
-                <div className="flex items-center gap-5 bg-white/50 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/60 relative z-10">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-green-600/10">
-                        {user?.name?.charAt(0)}
+
+                <div className="flex items-center gap-6 relative z-10">
+                    <div
+                        onClick={() => navigate('/farmer/wallet')}
+                        className="bg-white/50 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/60 flex items-center gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
+                    >
+                        <div className="p-2 bg-green-100 rounded-lg text-green-700 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                            <Wallet size={18} strokeWidth={3} />
+                        </div>
+                        <div>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">My Wallet</p>
+                            <p className="text-lg font-black text-slate-800 tracking-tighter leading-none">₹{walletBalance.toLocaleString()}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-[9px] font-black text-green-700/60 uppercase tracking-[0.2em] mb-0.5">{t('farmer.villageNetwork')}</p>
-                        <p className="text-base font-black text-slate-800">{user?.village || t('farmer.localRegion')}</p>
+
+                    <div className="flex items-center gap-5 bg-white/50 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/60">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-green-600/10">
+                            {user?.name?.charAt(0)}
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[8px] font-black uppercase tracking-widest">TRUSTED OWNER</span>
+                                <p className="text-[9px] font-black text-green-700/60 uppercase tracking-[0.2em]">{t('farmer.villageNetwork')}</p>
+                            </div>
+                            <p className="text-base font-black text-slate-800">{user?.village || t('farmer.localRegion')}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -130,6 +162,13 @@ const FarmerDashboard = () => {
                     >
                         {t('farmer.mySchedule')}
                         {activeTab === 'bookings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('calendar')}
+                        className={`pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative z-10 ${activeTab === 'calendar' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Calendar
+                        {activeTab === 'calendar' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
                     </button>
                 </div>
 
@@ -192,8 +231,13 @@ const FarmerDashboard = () => {
                                             />
                                         </div>
 
-                                        <div className="p-6">
-                                            <div className="flex justify-between items-start mb-4">
+                                        <div className="p-6 relative">
+                                            {asset.operatorSegment && asset.operatorSegment !== 'NEW' && (
+                                                <div className="absolute -top-4 left-6 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-md">
+                                                    TRUSTED OWNER
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-start mb-4 mt-2">
                                                 <div>
                                                     <h4 className="font-black text-slate-800 text-lg tracking-tight mb-1">{asset.name}</h4>
                                                     <div className="flex items-center gap-2 text-slate-400">
@@ -202,8 +246,49 @@ const FarmerDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-xl font-black text-green-600 tracking-tighter">₹{asset.hourlyRate}</p>
+                                                    {asset.originalRate && (
+                                                        <p className="text-xs font-bold text-slate-400 line-through tracking-tighter decoration-red-400/50">₹{asset.originalRate}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-2 justify-end">
+                                                        {asset.originalRate && (
+                                                            <span className="px-1.5 py-0.5 bg-green-100 text-green-600 rounded text-[8px] font-black uppercase tracking-widest">LOYALTY PRICE</span>
+                                                        )}
+                                                        <p className="text-xl font-black text-green-600 tracking-tighter">₹{asset.hourlyRate}</p>
+                                                    </div>
                                                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">per hour</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Attachments & Score */}
+                                            <div className="flex flex-wrap gap-2 mb-6 min-h-[48px]">
+                                                {asset.attachments && asset.attachments.map((att, idx) => (
+                                                    <span key={idx} className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">
+                                                        + {att}
+                                                    </span>
+                                                ))}
+                                                {(!asset.attachments || asset.attachments.length === 0) && (
+                                                    <span className="text-[9px] text-slate-300 font-bold italic">No attachments included</span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between mb-6 pt-4 border-t border-slate-50">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                                        <Star size={12} className="text-amber-400 fill-amber-400" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Owner Score</p>
+                                                        <p className="text-[10px] font-black text-slate-800 tracking-tight">{asset.operatorScore?.toFixed(1) || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                                        <Activity size={12} className="text-blue-500" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Utilization</p>
+                                                        <p className="text-[10px] font-black text-slate-800 tracking-tight">Medium</p>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -231,6 +316,10 @@ const FarmerDashboard = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    ) : activeTab === 'calendar' ? (
+                        <div className="space-y-6">
+                            <FarmerCalendar externalBookings={bookings} />
                         </div>
                     ) : (
                         /* My Bookings Tab Content */
@@ -268,6 +357,16 @@ const FarmerDashboard = () => {
                                                             <span className="text-[10px] font-bold uppercase tracking-widest">{booking.bookingTime}</span>
                                                         </div>
                                                     </div>
+                                                    <div className="flex flex-col items-start gap-1 mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                                        <div className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                                                            <Phone size={10} className="text-green-600" />
+                                                            {booking.Asset?.operatorPhone || 'No Phone'}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                                                            <MapPin size={10} className="text-blue-600" />
+                                                            {booking.Asset?.operatorAddress || booking.Asset?.location || 'Local Area'}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-8">
@@ -275,10 +374,53 @@ const FarmerDashboard = () => {
                                                     <p className="text-xl font-black text-slate-800 tracking-tighter">₹{booking.Asset?.hourlyRate || 0}</p>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('farmer.hourlyYield')}</p>
                                                 </div>
-                                                <div className={`px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em]
-                                                    ${booking.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                    {booking.status}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <div className={`px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[0.2em]
+                                                        ${booking.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : (booking.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}`}>
+                                                        {booking.status === 'BOOKED' ? 'RESERVED' : booking.status === 'COMPLETED' ? 'FINISHED' : booking.status === 'PENDING' ? 'WAITING' : booking.status}
+                                                    </div>
+                                                    {booking.status === 'COMPLETED' && !booking.isReviewed && (
+                                                        <button
+                                                            onClick={() => setSelectedBookingForReview(booking)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors border border-amber-100"
+                                                        >
+                                                            <Star size={10} fill="currentColor" />
+                                                            Rate Job
+                                                        </button>
+                                                    )}
+                                                    {(booking.status === 'COMPLETED' || booking.status === 'IN_PROGRESS') && !booking.isDisputed && (
+                                                        <button
+                                                            onClick={() => setSelectedBookingForDispute(booking)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[8px] font-black uppercase tracking-widest transition-colors border border-red-100 mt-2"
+                                                        >
+                                                            <AlertTriangle size={10} />
+                                                            Report Issue
+                                                        </button>
+                                                    )}
+                                                    {booking.isDisputed && (
+                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-[8px] font-black uppercase tracking-widest border border-red-200 mt-2 animate-pulse">
+                                                            <ShieldAlert size={10} />
+                                                            DISPUTED ({booking.disputeStatus})
+                                                        </div>
+                                                    )}
                                                 </div>
+                                                {(booking.status === 'BOOKED' || booking.status === 'PENDING') && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm(t('farmer.confirmCancel') || 'Are you sure you want to cancel this booking? If cancelled within 24 hours of the start time, a penalty will be applied to your trust score.')) {
+                                                                try {
+                                                                    await bookingsAPI.cancel(booking.id);
+                                                                    fetchData();
+                                                                } catch (err) {
+                                                                    alert(err.response?.data?.error || t('farmer.reserveMachineModal.bookingFailed'));
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-colors"
+                                                    >
+                                                        {t('common.cancel') || 'Cancel'}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -293,6 +435,7 @@ const FarmerDashboard = () => {
             {selectedAsset && (
                 <BookingModal
                     asset={selectedAsset}
+                    walletBalance={walletBalance}
                     onClose={() => setSelectedAsset(null)}
                     onSuccess={() => {
                         setSelectedAsset(null);
@@ -301,22 +444,52 @@ const FarmerDashboard = () => {
                     }}
                 />
             )}
+
+            {selectedBookingForReview && (
+                <ReviewModal
+                    booking={selectedBookingForReview}
+                    onClose={() => setSelectedBookingForReview(null)}
+                    onSuccess={() => {
+                        setSelectedBookingForReview(null);
+                        fetchData();
+                    }}
+                />
+            )}
+
+            {selectedBookingForDispute && (
+                <DisputeModal
+                    booking={selectedBookingForDispute}
+                    onClose={() => setSelectedBookingForDispute(null)}
+                    onSuccess={() => {
+                        setSelectedBookingForDispute(null);
+                        fetchData();
+                    }}
+                />
+            )}
         </div>
     );
 };
 
-const BookingModal = ({ asset, onClose, onSuccess }) => {
+const BookingModal = ({ asset, walletBalance, onClose, onSuccess }) => {
     const { t } = useTranslation();
     const [date, setDate] = useState('');
     const [time, setTime] = useState('09:00');
     const [loading, setLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const { user } = useAuth();
+    const isBalanceInsufficient = walletBalance < asset.hourlyRate;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        if (isBalanceInsufficient) {
+            setError(`Insufficient wallet balance (₹${walletBalance.toLocaleString()}). Please add at least ₹${(asset.hourlyRate - walletBalance).toLocaleString()} more to book.`);
+            setLoading(false);
+            return;
+        }
 
         try {
             await bookingsAPI.create({
@@ -413,9 +586,12 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
                         <div className="flex justify-between items-center relative z-10">
                             <div>
                                 <p className="text-[10px] font-black text-green-700/60 uppercase tracking-[0.2em] mb-1 leading-none">{t('farmer.reserveMachineModal.standardRate')}</p>
-                                <p className="text-[10px] text-slate-400 font-bold italic">{t('farmer.reserveMachineModal.noUpfront')}</p>
+                                <p className="text-[10px] text-slate-400 font-bold italic">Funds will be held in secure escrow</p>
                             </div>
                             <div className="text-right">
+                                {asset.originalRate && (
+                                    <p className="text-sm font-bold text-slate-400 line-through tracking-tighter decoration-red-400/50 mb-1">₹{asset.originalRate}</p>
+                                )}
                                 <span className="text-4xl font-black text-slate-900 tracking-tighter">₹{asset.hourlyRate}</span>
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">/ hour</p>
                             </div>
@@ -432,11 +608,11 @@ const BookingModal = ({ asset, onClose, onSuccess }) => {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || isBalanceInsufficient}
                         className={`w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all relative overflow-hidden group/btn btn-premium
-                            ${loading ? 'bg-slate-300 cursor-not-allowed' : 'bg-green-600 text-white shadow-[0_20px_40px_rgba(22,163,74,0.3)] hover:shadow-[0_25px_50px_rgba(22,163,74,0.4)] active:scale-95'}`}
+                            ${loading || isBalanceInsufficient ? 'bg-slate-300 cursor-not-allowed' : 'bg-green-600 text-white shadow-[0_20px_40px_rgba(22,163,74,0.3)] hover:shadow-[0_25px_50px_rgba(22,163,74,0.4)] active:scale-95'}`}
                     >
-                        {loading ? t('farmer.reserveMachineModal.transmitting') : t('farmer.reserveMachineModal.confirm')}
+                        {loading ? t('farmer.reserveMachineModal.transmitting') : isBalanceInsufficient ? 'Insufficient Balance' : t('farmer.reserveMachineModal.confirm')}
                     </button>
                 </form>
             </div>

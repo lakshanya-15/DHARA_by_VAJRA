@@ -1,34 +1,45 @@
 const prisma = require('../config/prisma');
-const scoringService = require('./scoringService');
 
-async function createReview({ bookingId, rating, comment }) {
-    const review = await prisma.review.create({
-        data: {
-            bookingid: bookingId,
-            rating: rating,
-            comment: comment
-        },
-        include: {
-            Booking: {
-                include: { Asset: true }
+async function createReview({ farmerId, operatorId, assetId, bookingId, rating, comment }) {
+    return prisma.$transaction(async (tx) => {
+        const review = await tx.review.create({
+            data: {
+                farmerId,
+                operatorId,
+                assetId,
+                bookingId,
+                rating: parseInt(rating),
+                comment
             }
-        }
+        });
+
+        // Update Operator's behaviorScore based on average rating
+        const reviews = await tx.review.findMany({
+            where: { operatorId }
+        });
+        const avgRating = reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
+
+        await tx.user.update({
+            where: { id: operatorId },
+            data: { behaviorScore: avgRating }
+        });
+
+        return review;
     });
+}
 
-    // Note: Reviews can also impact the score if we add a "feedback quality" metric later.
-    // For now, we update the score to trigger a recalculation which might include review counts.
-    if (review.Booking?.farmerid) {
-        await scoringService.updateUserScore(review.Booking.farmerid);
-    }
-
-    // Update operator score if booking has an asset with an owner
-    if (review.Booking?.Asset?.ownerid) {
-        await scoringService.updateUserScore(review.Booking.Asset.ownerid);
-    }
-
-    return review;
+async function getOperatorReviews(operatorId) {
+    return prisma.review.findMany({
+        where: { operatorId },
+        include: {
+            Farmer: { select: { name: true } },
+            Asset: { select: { name: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
 }
 
 module.exports = {
-    createReview
+    createReview,
+    getOperatorReviews
 };

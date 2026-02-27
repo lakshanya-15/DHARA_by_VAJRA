@@ -3,13 +3,19 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-reac
 import { useTranslation } from 'react-i18next';
 import { bookingsAPI } from '../../services/api';
 
-const FarmerCalendar = () => {
+const FarmerCalendar = ({ externalBookings = null }) => {
     const { t } = useTranslation();
     const [bookings, setBookings] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (externalBookings) {
+            setBookings(externalBookings);
+            setLoading(false);
+            return;
+        }
+
         const fetchBookings = async () => {
             try {
                 const response = await bookingsAPI.getMyBookings();
@@ -21,7 +27,7 @@ const FarmerCalendar = () => {
             }
         };
         fetchBookings();
-    }, []);
+    }, [externalBookings]);
 
     const monthName = currentDate.toLocaleString('default', { month: 'long' });
     const year = currentDate.getFullYear();
@@ -39,10 +45,16 @@ const FarmerCalendar = () => {
     const getBookingsForDay = (day) => {
         if (!day) return [];
         return bookings.filter(b => {
-            const bDate = new Date(b.bookingdate);
-            return bDate.getDate() === day &&
-                bDate.getMonth() === currentDate.getMonth() &&
-                bDate.getFullYear() === currentDate.getFullYear();
+            const dateStr = b.startDate || b.bookingdate;
+            if (!dateStr) return false;
+
+            // Extract YYYY-MM-DD to avoid timezone shifting issues
+            const dateOnly = typeof dateStr === 'string' ? dateStr.split('T')[0] : new Date(dateStr).toISOString().split('T')[0];
+            const [yearStr, monthStr, dayStr] = dateOnly.split('-');
+
+            return parseInt(dayStr, 10) === day &&
+                (parseInt(monthStr, 10) - 1) === currentDate.getMonth() &&
+                parseInt(yearStr, 10) === currentDate.getFullYear();
         });
     };
 
@@ -90,8 +102,8 @@ const FarmerCalendar = () => {
                                         </span>
                                         <div className="mt-1 space-y-1">
                                             {dayBookings.map((b, idx) => (
-                                                <div key={idx} className="p-1.5 bg-green-500 text-white text-[9px] font-black rounded-lg border border-green-400 truncate shadow-sm uppercase tracking-tighter">
-                                                    {b.Asset?.name || 'Booking'}
+                                                <div className={`p-1.5 ${b.status === 'COMPLETED' ? 'bg-slate-400' : (b.status === 'CANCELLED' ? 'bg-red-400' : 'bg-green-600')} text-white text-[9px] font-black rounded-lg border border-white/20 truncate shadow-sm uppercase tracking-tighter`}>
+                                                    {b.Asset?.name || 'Machine'}
                                                 </div>
                                             ))}
                                         </div>
@@ -104,7 +116,7 @@ const FarmerCalendar = () => {
             </div>
             {loading && (
                 <div className="flex justify-center p-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Syncing Calendar...</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Updating Calendar...</p>
                 </div>
             )}
         </div>

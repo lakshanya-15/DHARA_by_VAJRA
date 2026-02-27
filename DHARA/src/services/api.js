@@ -24,8 +24,11 @@ api.interceptors.request.use(
 );
 
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (name, email, password, role) => api.post('/auth/register', { name, email, password, role }),
+  login: (phone, password) => api.post('/auth/login', { phone, password }),
+  requestOTP: (phone) => api.post('/auth/request-otp', { phone }),
+  verifyOTP: (phone, otp) => api.post('/auth/verify-otp', { phone, otp }),
+  register: (userData) => api.post('/auth/register', userData),
+  me: () => api.get('/auth/me'),
 };
 
 export const assetsAPI = {
@@ -39,6 +42,22 @@ export const assetsAPI = {
 export const bookingsAPI = {
   create: (bookingData) => api.post('/bookings', bookingData),
   getMyBookings: () => api.get('/bookings/my'),
+  cancel: (id) => api.patch(`/bookings/${id}/cancel`),
+  updateStatus: (id, status) => api.patch(`/bookings/${id}/status`, { status }),
+};
+
+export const walletAPI = {
+  getMy: () => api.get('/wallet/my'),
+  deposit: (amount) => api.post('/wallet/deposit', { amount }),
+};
+
+export const reviewsAPI = {
+  create: (reviewData) => api.post('/reviews', reviewData),
+  getForOperator: (operatorId) => api.get(`/reviews/operator/${operatorId}`),
+};
+
+export const disputesAPI = {
+  create: (disputeData) => api.post('/disputes', disputeData),
 };
 
 export const notificationsAPI = {

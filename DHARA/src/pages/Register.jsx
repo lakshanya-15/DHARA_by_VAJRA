@@ -7,8 +7,8 @@ import { useTranslation } from 'react-i18next';
 
 const Register = () => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [role, setRole] = useState('FARMER');
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const result = await register(name, email, password, role);
+    const result = await register({ name, phone, role, address });
     if (result.success) {
       navigate('/login');
     } else {
@@ -104,26 +104,25 @@ const Register = () => {
             </div>
 
             <div className="group/input relative">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">{t('register.email')}</label>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">Mobile Number</label>
               <input
-                type="email"
+                type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300"
-                placeholder="connect@dhara.com"
+                placeholder="Ex. 91XXXXXXXXXX"
               />
             </div>
 
             <div className="group/input relative">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">{t('register.password')}</label>
-              <input
-                type="password"
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">Full Address</label>
+              <textarea
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300"
-                placeholder="••••••••"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300 min-h-[100px]"
+                placeholder="Ex. Village Rampur, Near Post Office..."
               />
             </div>
 

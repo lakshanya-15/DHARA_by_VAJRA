@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { bookingsAPI } from '../../services/api';
-import { Calendar, Clock, CheckCircle, User as UserIcon, Scan } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, User as UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -52,7 +52,7 @@ const Bookings = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
-                    <Calendar size={14} /> {new Date(booking.bookingdate).toLocaleDateString()}
+                    <Calendar size={14} /> {new Date(booking.startDate || booking.bookingdate).toLocaleDateString()}
                   </span>
                   {booking.bookingTime && (
                     <span className="flex items-center gap-1 text-green-600 font-medium">
@@ -64,32 +64,45 @@ const Bookings = () => {
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1 w-full md:w-auto">
+            <div className="flex flex-col items-end gap-2 w-full md:w-auto">
+              {/* Status badge with plain English label */}
               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
-                ${booking.status === 'COMPLETED'
+                    ${booking.status === 'COMPLETED'
                   ? 'bg-gray-100 text-gray-600'
                   : (booking.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700')}`}>
-                {booking.status}
+                {booking.status === 'BOOKED' ? 'Reserved' : booking.status === 'COMPLETED' ? 'Finished' : booking.status === 'CANCELLED' ? 'Cancelled' : booking.status === 'PENDING' ? 'Waiting' : booking.status}
               </span>
 
-              <button
-                onClick={() => navigate(`/scan/${booking.id}`)}
-                className="mt-2 flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-cyan-500 transition-all shadow-lg shadow-cyan-600/20 active:scale-95 group"
-              >
-                <Scan size={14} className="group-hover:rotate-90 transition-transform" />
-                AI Damage Scan
-              </button>
+              {(booking.status === 'BOOKED' || booking.status === 'PENDING') && (
+                <button
+                  onClick={async () => {
+                    if (window.confirm(t('farmer.confirmCancel') || 'Are you sure you want to cancel this booking? If cancelled within 24 hours of the start time, a penalty will be applied to your trust score.')) {
+                      try {
+                        await bookingsAPI.cancel(booking.id);
+                        // Refresh bookings list from server
+                        const resp = await bookingsAPI.getMyBookings();
+                        setBookings(resp.data.data || []);
+                      } catch (err) {
+                        alert(err.response?.data?.error || t('farmer.reserveMachineModal.bookingFailed'));
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-colors"
+                >
+                  Cancel Booking
+                </button>
+              )}
             </div>
-
           </div>
         ))}
 
-        {bookings.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-            <p className="text-gray-400">{t('farmer.noBookings')}</p>
-          </div>
-        )}
       </div>
+
+      {bookings.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+          <p className="text-gray-400">{t('farmer.noBookings')}</p>
+        </div>
+      )}
     </div>
   );
 };

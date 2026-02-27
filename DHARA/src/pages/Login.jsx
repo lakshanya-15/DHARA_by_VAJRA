@@ -1,135 +1,116 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserCircle, ArrowLeft } from 'lucide-react';
-
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1); // 1: phone, 2: otp
+  const { requestOTP, verifyOTP } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
 
-  const handleSubmit = async (e) => {
+  const handleRequestOTP = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try {
-      const result = await login(email, password);
-      if (result.success) {
-        const role = result.user.role?.toLowerCase();
-        if (role === 'operator') {
-          navigate('/operator/dashboard');
-        } else {
-          navigate('/farmer/dashboard');
-        }
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      console.error("Login catch error:", err);
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
+    const res = await requestOTP(phone);
+    if (res.success) {
+      setStep(2);
+    } else {
+      setError(res.message);
     }
+    setLoading(false);
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const res = await verifyOTP(phone, otp);
+    if (res.success) {
+      const role = res.user.role?.toLowerCase();
+      if (role === 'operator') navigate('/operator/dashboard');
+      else navigate('/farmer/dashboard');
+    } else {
+      setError(res.message);
+    }
+    setLoading(false);
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Immersive Background - Softened */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: 'url("/extracomponents/uibg1.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
+      <div className="absolute inset-0 z-0" style={{ backgroundImage: 'url("/extracomponents/uibg1.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
       </div>
 
-      {/* Global Back Button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="absolute top-6 left-6 md:top-8 md:left-12 z-50 group flex items-center gap-3 px-5 py-2.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl text-slate-600 hover:text-green-600 hover:bg-white hover:shadow-xl hover:shadow-green-600/5 transition-all active:scale-95 shadow-sm"
-      >
-        <div className="p-1.5 bg-slate-50 group-hover:bg-green-50 rounded-lg transition-colors">
-          <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-0.5 transition-transform" />
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('landing.howItWorks.step1Desc') ? 'Go Back' : 'Go Back'}</span>
+      <button onClick={() => navigate(-1)} className="absolute top-6 left-6 md:top-8 md:left-12 z-50 group flex items-center gap-3 px-5 py-2.5 bg-white/60 backdrop-blur-md border border-white/80 rounded-2xl text-slate-600 hover:text-green-600 transition-all active:scale-95 shadow-sm">
+        <ArrowLeft size={16} strokeWidth={3} />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Go Back</span>
       </button>
 
       <div className="relative z-10 max-w-md w-full mx-4 animate-fade-up">
-        {/* Light & Elegant Card */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group border border-white">
-          <div className="absolute -top-24 -left-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl group-hover:bg-green-500/20 transition-colors duration-500"></div>
-
-          <div className="text-center mb-10 relative z-10">
-            <div className="inline-flex items-center justify-center w-24 h-24 mb-6 animate-float">
-              <img src="/dhara_logo.png" alt="Logo" className="w-16 h-16 object-cover rounded-full drop-shadow-xl" />
-            </div>
+        <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-2xl border border-white">
+          <div className="text-center mb-10">
+            <img src="/dhara_logo.png" alt="Logo" className="w-16 h-16 object-cover rounded-full mx-auto mb-6" />
             <h2 className="text-4xl font-black text-slate-800 tracking-tight">{t('login.title')}</h2>
-            <p className="text-slate-500 mt-2 font-bold text-sm uppercase tracking-widest">{t('login.subtitle')}</p>
+            <p className="text-slate-500 mt-2 font-bold text-sm uppercase tracking-widest">Login with Phone</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center animate-pulse">
-                {error}
+          <form onSubmit={step === 1 ? handleRequestOTP : handleVerifyOTP} className="space-y-6">
+            {error && <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-black uppercase text-center">{error}</div>}
+
+            {step === 1 ? (
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Phone Number</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-green-600 outline-none font-bold"
+                  placeholder="91XXXXXXXX"
+                  required
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Enter 6-digit OTP</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:border-green-600 outline-none font-bold text-center tracking-[0.5em]"
+                  placeholder="123456"
+                  maxLength={6}
+                  required
+                />
+                <p className="text-[10px] text-center text-slate-400 mt-2">Check your phone for the code</p>
               </div>
             )}
-
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{t('login.email')}</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-600 outline-none transition-all text-slate-900 font-bold placeholder:text-slate-300"
-                placeholder="farmer@dhara.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{t('login.password')}</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-green-500/10 focus:border-green-600 outline-none transition-all text-slate-900 font-bold placeholder:text-slate-300"
-                placeholder="••••••••"
-              />
-            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-600/20 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 btn-premium uppercase tracking-widest text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 disabled:bg-slate-100 uppercase tracking-widest text-sm"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  {t('login.authenticating')}
-                </span>
-              ) : t('login.signIn')}
+              {loading ? 'Processing...' : (step === 1 ? 'Send OTP' : 'Verify & Login')}
             </button>
+            {step === 2 && (
+              <button type="button" onClick={() => setStep(1)} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-green-600">Change Phone Number</button>
+            )}
           </form>
 
-          <div className="mt-10 text-center relative z-10">
-            <p className="text-sm text-slate-400 font-bold">
-              {t('login.noAccount')}
-            </p>
-            <Link to="/register" className="inline-block mt-2 text-green-600 hover:text-green-700 font-black transition-colors border-b-2 border-green-600/10 hover:border-green-600 pb-0.5 uppercase tracking-widest text-[10px]">
+          <div className="mt-10 text-center">
+            <p className="text-sm text-slate-400 font-bold">{t('login.noAccount')}</p>
+            <Link to="/register" className="inline-block mt-2 text-green-600 font-black border-b-2 border-green-600/10 hover:border-green-600 uppercase tracking-widest text-[10px]">
               {t('login.createAccount')}
             </Link>
           </div>
         </div>
-
-        {/* Brand Footer */}
         <div className="text-center mt-8 text-white/20 text-[10px] font-black uppercase tracking-[0.3em] cursor-default select-none">
           © 2026 VAJRA Systems • Rural India Empowered
         </div>

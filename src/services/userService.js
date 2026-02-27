@@ -6,10 +6,10 @@ const prisma = require('../config/prisma');
 
 const ROLES = ['FARMER', 'OPERATOR', 'ADMIN'];
 
-async function createUser({ email, password, name, role }) {
-  const existing = await prisma.user.findUnique({ where: { email } });
+async function createUser({ phone, password, name, role, address }) {
+  const existing = await prisma.user.findUnique({ where: { phone } });
   if (existing) {
-    const err = new Error('Email already registered');
+    const err = new Error('Phone number already registered');
     err.statusCode = 409;
     throw err;
   }
@@ -21,17 +21,18 @@ async function createUser({ email, password, name, role }) {
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
     data: {
-      email,
+      phone,
       password: hashedPassword,
-      name: name || email,
+      name: name || phone,
+      address: address || '',
       role: (role || 'FARMER').toUpperCase(),
     },
   });
-  return { id: user.id, email: user.email, name: user.name, role: user.role };
+  return { id: user.id, phone: user.phone, name: user.name, role: user.role };
 }
 
-async function findByEmail(email) {
-  return prisma.user.findUnique({ where: { email } });
+async function findByPhone(phone) {
+  return prisma.user.findUnique({ where: { phone } });
 }
 
 async function findById(id) {
@@ -44,11 +45,11 @@ async function verifyPassword(user, plainPassword) {
 
 async function listAll() {
   const users = await prisma.user.findMany({
-    select: { id: true, email: true, name: true, role: true, createdat: true },
+    select: { id: true, phone: true, name: true, role: true, createdat: true },
   });
   return users.map((u) => ({
     id: u.id,
-    email: u.email,
+    phone: u.phone,
     name: u.name,
     role: u.role,
     createdAt: u.createdat?.toISOString?.() ?? u.createdat,
@@ -57,7 +58,7 @@ async function listAll() {
 
 module.exports = {
   createUser,
-  findByEmail,
+  findByPhone,
   findById,
   verifyPassword,
   listAll,

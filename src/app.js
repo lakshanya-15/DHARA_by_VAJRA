@@ -10,6 +10,10 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const walletRoutes = require('./routes/walletRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const disputeRoutes = require('./routes/disputeRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const config = require('./config');
 
@@ -65,6 +69,10 @@ app.use('/bookings', bookingRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/maintenance', maintenanceRoutes);
 app.use('/admin', adminRoutes);
+app.use('/profile', profileRoutes);
+app.use('/wallet', walletRoutes);
+app.use('/reviews', reviewRoutes);
+app.use('/disputes', disputeRoutes);
 
 // Health check (optional, useful for demos)
 app.get('/health', (req, res) => res.json({ ok: true }));

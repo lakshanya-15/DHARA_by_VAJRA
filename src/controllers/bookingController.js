@@ -48,4 +48,23 @@ async function getMy(req, res, next) {
   }
 }
 
-module.exports = { create, getMy };
+async function updateStatus(req, res, next) {
+  try {
+    const { status } = req.body;
+    const booking = await bookingService.updateJobStatus(req.params.id, status, req.user.id);
+    return success(res, booking);
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function cancel(req, res, next) {
+  try {
+    const result = await bookingService.cancelBooking(req.params.id, req.user.id);
+    return success(res, result);
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { create, getMy, cancel, updateStatus };
