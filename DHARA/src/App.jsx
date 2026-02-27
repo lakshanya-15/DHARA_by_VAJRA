@@ -22,7 +22,6 @@ import AddAsset from './pages/operator/AddAsset';
 import MyAssets from './pages/operator/MyAssets';
 import OperatorAnalytics from './pages/operator/Analytics';
 import MaintenanceLogs from './pages/operator/MaintenanceLogs';
-import MaintenanceLogs from './pages/operator/MaintenanceLogs';
 
 import AdminDashboard from './pages/admin/Dashboard';
 
