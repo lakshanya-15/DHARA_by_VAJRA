@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const notificationService = require('./notificationService');
+const scoringService = require('./scoringService');
 
 function toApiBooking(booking) {
   if (!booking) return null;
@@ -75,6 +76,14 @@ async function createBooking({ farmerId, assetId, startDate, bookingTime, endDat
     });
   }
 
+  // Update farmer score
+  await scoringService.updateUserScore(farmerId);
+
+  // Update operator score
+  if (booking.Asset?.ownerid) {
+    await scoringService.updateUserScore(booking.Asset.ownerid);
+  }
+
   return toApiBooking(booking);
 }
 
@@ -99,7 +108,7 @@ async function refreshBookingStatuses() {
       status: 'BOOKED',
       bookingdate: { lt: today }
     },
-    select: { id: true, assetid: true }
+    select: { id: true, assetid: true, farmerid: true }
   });
 
   if (expiredBookings.length > 0) {
@@ -116,6 +125,24 @@ async function refreshBookingStatuses() {
       where: { id: { in: assetIds } },
       data: { availability: true }
     });
+
+    // Update scores for all farmers and operators involved
+    const farmerIds = [...new Set(expiredBookings.map(b => b.farmerid))];
+    const assetIdsForOwners = [...new Set(expiredBookings.map(b => b.assetid))];
+
+    for (const farmerId of farmerIds) {
+      if (farmerId) await scoringService.updateUserScore(farmerId);
+    }
+
+    // Get owners of these assets to update their scores
+    const assetsWithOwners = await prisma.asset.findMany({
+      where: { id: { in: assetIdsForOwners } },
+      select: { ownerid: true }
+    });
+    const ownerIds = [...new Set(assetsWithOwners.map(a => a.ownerid))];
+    for (const ownerId of ownerIds) {
+      if (ownerId) await scoringService.updateUserScore(ownerId);
+    }
 
     console.log(`Auto-completed ${expiredBookings.length} expired bookings.`);
   }
@@ -193,6 +220,16 @@ async function cancelBooking(id) {
       message: `Booking for ${booking.Asset.name} has been CANCELLED.`,
       type: 'NOTIFICATION',
     });
+  }
+
+  // Update farmer score
+  if (booking.farmerid) {
+    await scoringService.updateUserScore(booking.farmerid);
+  }
+
+  // Update operator score
+  if (booking.Asset?.ownerid) {
+    await scoringService.updateUserScore(booking.Asset.ownerid);
   }
 
   return toApiBooking(booking);

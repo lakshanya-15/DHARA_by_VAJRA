@@ -57,6 +57,8 @@ model Booking {
   Asset       Asset          @relation(fields: [assetid], references: [id], onUpdate: NoAction, map: "fk_booking_asset")
   User        User           @relation(fields: [farmerid], references: [id], onUpdate: NoAction, map: "fk_booking_farmer")
   DamageRecord DamageRecord[]
+  Payment      Payment[]
+  Review       Review[]
 
   @@unique([assetid, bookingdate, bookingTime], map: "unique_asset_booking_date_time")
 }
@@ -83,10 +85,13 @@ model User {
   state     String?
   lat       Decimal?  @db.Decimal(10, 7)
   lng       Decimal?  @db.Decimal(10, 7)
+  behaviorScore Int       @default(0)
+  segment       String    @default("NEW")
   createdat DateTime? @default(now()) @db.Timestamp(6)
   Asset     Asset[]
   Booking   Booking[]
   Notification Notification[]
+  Engagement   Engagement[]
 }
 
 model Notification {
@@ -110,4 +115,30 @@ enum user_role {
   FARMER
   OPERATOR
   ADMIN
+}
+
+model Payment {
+  id          String   @id @default(uuid()) @db.Uuid
+  bookingid   String   @db.Uuid
+  amount      Decimal  @db.Decimal(10, 2)
+  paymentDate DateTime @default(now()) @db.Timestamp(6)
+  late        Boolean  @default(false)
+  Booking     Booking  @relation(fields: [bookingid], references: [id], onUpdate: NoAction)
+}
+
+model Review {
+  id          String   @id @default(uuid()) @db.Uuid
+  bookingid   String   @db.Uuid
+  rating      Int
+  comment     String?
+  createdat   DateTime @default(now()) @db.Timestamp(6)
+  Booking     Booking  @relation(fields: [bookingid], references: [id], onUpdate: NoAction)
+}
+
+model Engagement {
+  id        String   @id @default(uuid()) @db.Uuid
+  userid    String   @db.Uuid
+  action    String
+  createdat DateTime @default(now()) @db.Timestamp(6)
+  User      User     @relation(fields: [userid], references: [id], onUpdate: NoAction)
 }

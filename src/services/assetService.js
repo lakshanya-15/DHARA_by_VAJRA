@@ -57,7 +57,12 @@ async function listAll(filters = {}) {
   if (filters.category) where.category = filters.category;
   const assets = await prisma.asset.findMany({
     where,
-    include: { User: true, Booking: true }
+    include: { User: true, Booking: true },
+    orderBy: {
+      User: {
+        behaviorScore: 'desc'
+      }
+    }
   });
   return assets.map(toApiAsset);
 }
