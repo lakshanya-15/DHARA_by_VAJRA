@@ -44,15 +44,13 @@ async function verifyPassword(user, plainPassword) {
 
 async function listAll() {
   const users = await prisma.user.findMany({
-    select: { id: true, email: true, name: true, role: true, behaviorScore: true, segment: true, createdat: true },
+    select: { id: true, email: true, name: true, role: true, createdat: true },
   });
   return users.map((u) => ({
     id: u.id,
     email: u.email,
     name: u.name,
     role: u.role,
-    behaviorScore: u.behaviorScore,
-    segment: u.segment,
     createdAt: u.createdat?.toISOString?.() ?? u.createdat,
   }));
 }

@@ -17,10 +17,4 @@ router.post('/', requireRole(['FARMER']), bookingController.create);
 // GET /bookings/my - FARMER sees their bookings, OPERATOR sees bookings for their assets
 router.get('/my', requireRole(['FARMER', 'OPERATOR']), bookingController.getMy);
 
-// PATCH /bookings/:id - Update booking (FARMER only)
-router.patch('/:id', requireRole(['FARMER']), bookingController.update);
-
-// PATCH /bookings/:id/cancel - Cancel booking (FARMER only)
-router.patch('/:id/cancel', requireRole(['FARMER']), bookingController.cancel);
-
 module.exports = router;

@@ -1,7 +1,6 @@
 /**
  * Express app - routes and middlewares.
  * Integration points: auth, assets, bookings, admin routes; global error handler.
- * Deployment Heartbeat: 2026-02-26
  */
 const express = require('express');
 const cors = require('cors');
@@ -11,7 +10,6 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
-const profileRoutes = require('./routes/profileRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const config = require('./config');
 
@@ -55,8 +53,6 @@ app.get('/', (req, res) => {
       bookings: 'POST /bookings (FARMER), GET /bookings/my',
       notifications: 'GET /notifications, PATCH /notifications/:id/read',
       maintenance: 'GET /maintenance, POST /maintenance (OPERATOR)',
-      damageScan: 'GET /damage-scan/:bookingId, POST /damage-scan',
-      profile: 'GET /profile',
       admin: 'GET /admin/users, GET /admin/assets, GET /admin/bookings (ADMIN)',
     },
   });
@@ -68,7 +64,6 @@ app.use('/assets', assetRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/maintenance', maintenanceRoutes);
-app.use('/profile', profileRoutes);
 app.use('/admin', adminRoutes);
 
 // Health check (optional, useful for demos)

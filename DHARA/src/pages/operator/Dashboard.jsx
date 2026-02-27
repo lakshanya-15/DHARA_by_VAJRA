@@ -87,14 +87,14 @@ const OperatorDashboard = () => {
       {/* Header - Simple & Elegant */}
       <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl border border-white/60 flex flex-col md:flex-row justify-between items-center gap-8 shadow-lg">
         <div>
-          <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-1">{t('operator.fleetManager')}</h2>
-          <p className="text-slate-500 font-medium text-sm">
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-1">{t('operator.fleetManager')}</h2>
+          <p className="text-slate-500 font-bold text-sm">
             {t('operator.welcomeMessage', { name: user.name })}
           </p>
         </div>
         <button
           onClick={() => navigate('/operator/add-asset')}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-green-600/10 active:scale-95 transition-all flex items-center gap-2 uppercase tracking-wider text-xs"
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-green-600/10 active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest text-[10px]"
         >
           <Plus size={16} /> {t('operator.listNewMachine')}
         </button>
@@ -104,17 +104,17 @@ const OperatorDashboard = () => {
       {notifications.filter(n => !n.isread).length > 0 && (
         <div className="glass-card bg-amber-500/5 border-amber-500/20 rounded-[2rem] p-8 space-y-6 animate-pulse">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-amber-600 flex items-center gap-3 uppercase tracking-wider text-xs">
-              <Bell size={18} strokeWidth={2} /> {t('operator.fleetAlerts')}
+            <h3 className="font-black text-amber-600 flex items-center gap-3 uppercase tracking-[0.3em] text-[10px]">
+              <Bell size={18} strokeWidth={3} /> {t('operator.fleetAlerts')}
             </h3>
           </div>
           <div className="space-y-3">
             {notifications.filter(n => !n.isread).slice(0, 3).map(notif => (
               <div key={notif.id} className="bg-white/60 backdrop-blur-md p-4 rounded-2xl flex justify-between items-center shadow-sm border border-amber-500/10 animate-fade-up">
-                <p className="text-sm font-medium text-slate-700">{notif.message}</p>
+                <p className="text-sm font-bold text-slate-700">{notif.message}</p>
                 <button
                   onClick={() => handleMarkRead(notif.id)}
-                  className="text-xs text-amber-700 hover:text-amber-800 font-semibold px-4 py-2 hover:bg-amber-500/10 rounded-xl transition-colors uppercase tracking-wider"
+                  className="text-[10px] text-amber-700 hover:text-amber-800 font-black px-4 py-2 hover:bg-amber-500/10 rounded-xl transition-colors uppercase tracking-widest"
                 >
                   {t('common.confirm')}
                 </button>
@@ -134,8 +134,8 @@ const OperatorDashboard = () => {
                 : stat.icon}
             </div>
             <div>
-              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-slate-800 tracking-tight">{stat.value}</h3>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">{stat.title}</p>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
             </div>
           </div>
         ))}
@@ -146,14 +146,14 @@ const OperatorDashboard = () => {
         <div className="flex bg-slate-50/50 border-b border-white/40 px-8 pt-6 gap-8 relative">
           <button
             onClick={() => setActiveTab('assets')}
-            className={`pb-4 text-xs font-semibold uppercase tracking-wider transition-all relative z-10 ${activeTab === 'assets' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative z-10 ${activeTab === 'assets' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {t('operator.machineryFleet')}
             {activeTab === 'assets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
           </button>
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`pb-4 text-xs font-semibold uppercase tracking-wider transition-all relative z-10 ${activeTab === 'bookings' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative z-10 ${activeTab === 'bookings' ? 'text-green-700' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {t('operator.activeRevenue')}
             {activeTab === 'bookings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full"></div>}
@@ -169,7 +169,7 @@ const OperatorDashboard = () => {
             <div className="space-y-6">
               {assets.length === 0 ? (
                 <div className="py-20 text-center">
-                  <p className="p-10 text-slate-400 font-medium italic">{t('operator.noMachinery')}</p>
+                  <p className="p-10 text-slate-400 font-bold italic">{t('operator.noMachinery')}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -180,12 +180,12 @@ const OperatorDashboard = () => {
                           <img src="/dhara_logo.png" className="w-8 h-8 object-cover rounded-full" alt="Logo" />
                         </div>
                         <div>
-                          <h4 className="text-lg font-bold text-slate-800 tracking-tight mb-1">{asset.name}</h4>
+                          <h4 className="text-lg font-black text-slate-800 tracking-tight mb-1">{asset.name}</h4>
                           <div className="flex items-center gap-3">
-                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg uppercase tracking-wider">
+                            <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[8px] font-black rounded-lg uppercase tracking-widest">
                               {t(`operator.${(asset.type || 'Other').toLowerCase()}`, { defaultValue: asset.type || 'Other' })}
                             </span>
-                            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                               {t(`operator.${asset.category?.toLowerCase()}`, { defaultValue: asset.category?.replace('_', ' ') || 'OTHER' })}
                             </span>
                           </div>
@@ -194,12 +194,12 @@ const OperatorDashboard = () => {
 
                       <div className="flex items-center gap-8">
                         <div className="text-right">
-                          <p className="text-xl font-bold text-green-600">₹{asset.hourlyRate}</p>
-                          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('operator.perHour')}</p>
+                          <p className="text-xl font-black text-green-600 tracking-tighter">₹{asset.hourlyRate}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('operator.perHour')}</p>
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider
+                          <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest
                             ${asset.availability ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                             {asset.availability ? t('operator.active') : t('operator.reserved')}
                           </span>
@@ -231,7 +231,7 @@ const OperatorDashboard = () => {
             <div className="space-y-6">
               {bookings.filter(b => b.status === 'BOOKED').length === 0 ? (
                 <div className="py-20 text-center">
-                  <p className="text-slate-400 font-medium italic">{t('operator.noBookings')}</p>
+                  <p className="text-slate-400 font-bold italic">{t('operator.noBookings')}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -242,12 +242,12 @@ const OperatorDashboard = () => {
                           <Calendar className="text-slate-400" size={24} />
                         </div>
                         <div>
-                          <h4 className="text-lg font-bold text-slate-800 tracking-tight mb-1">{booking.Asset?.name}</h4>
+                          <h4 className="text-lg font-black text-slate-800 tracking-tight mb-1">{booking.Asset?.name}</h4>
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{booking.farmerName}</span>
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{booking.farmerName}</span>
                             </div>
-                            <div className="text-xs text-green-600 font-semibold border-l border-slate-100 pl-4">
+                            <div className="text-[10px] text-green-600 font-bold border-l border-slate-100 pl-4">
                               {booking.startDate}
                             </div>
                           </div>
@@ -255,12 +255,12 @@ const OperatorDashboard = () => {
                       </div>
 
                       <div className="flex items-center gap-10">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 px-4 py-2 rounded-xl">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl">
                           <Clock size={14} className="opacity-40" /> {booking.bookingTime || '09:00 AM'}
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold text-green-600 tracking-tight">₹{booking.Asset?.hourlyRate || 0}</p>
-                          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('operator.revenue')}</p>
+                          <p className="text-xl font-black text-green-600 tracking-tighter">₹{booking.Asset?.hourlyRate || 0}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('operator.revenue')}</p>
                         </div>
                       </div>
                     </div>
@@ -285,8 +285,8 @@ const OperatorDashboard = () => {
             <ArrowRight size={18} className="text-slate-300 group-hover:text-green-600 transition-colors" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-1">{t('operator.growthAnalytics')}</h3>
-            <p className="text-sm text-slate-500 font-medium">{t('operator.growthAnalyticsDesc') || 'Deconstruct your revenue stream and fleet performance.'}</p>
+            <h3 className="text-xl font-black text-slate-800 tracking-tight mb-1">{t('operator.growthAnalytics')}</h3>
+            <p className="text-xs text-slate-400 font-bold">{t('operator.growthAnalyticsDesc') || 'Deconstruct your revenue stream and fleet performance.'}</p>
           </div>
         </div>
 
@@ -301,8 +301,8 @@ const OperatorDashboard = () => {
             <ArrowRight size={18} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-1">{t('operator.fleetService')}</h3>
-            <p className="text-sm text-slate-500 font-medium">{t('operator.fleetServiceDesc') || 'Maintain elite performance standards with health logs.'}</p>
+            <h3 className="text-xl font-black text-slate-800 tracking-tight mb-1">{t('operator.fleetService')}</h3>
+            <p className="text-xs text-slate-400 font-bold">{t('operator.fleetServiceDesc') || 'Maintain elite performance standards with health logs.'}</p>
           </div>
         </div>
       </div>
@@ -347,8 +347,8 @@ const DeleteConfirmationModal = ({ onClose, onConfirm }) => {
           </div>
 
           <div>
-            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{t('common.confirmDelete') || 'Careful Now'}</h3>
-            <p className="text-slate-500 font-medium text-sm mt-2 leading-relaxed">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('common.confirmDelete') || 'Careful Now'}</h3>
+            <p className="text-slate-500 font-bold text-sm mt-2 leading-relaxed">
               {t('operator.deleteWarning') || 'Are you absolutely sure you want to remove this machine? This action is permanent and cannot be reversed.'}
             </p>
           </div>
@@ -356,13 +356,13 @@ const DeleteConfirmationModal = ({ onClose, onConfirm }) => {
           <div className="flex flex-col w-full gap-3 pt-4">
             <button
               onClick={onConfirm}
-              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-semibold uppercase tracking-wider text-sm shadow-lg shadow-red-600/20 active:scale-95 transition-all"
+              className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-red-600/20 active:scale-95 transition-all"
             >
               {t('common.confirmDelete') || 'Yes, Delete Machine'}
             </button>
             <button
               onClick={onClose}
-              className="w-full py-4 bg-slate-50 hover:bg-slate-100 text-slate-500 font-medium uppercase tracking-wider text-sm rounded-2xl active:scale-95 transition-all"
+              className="w-full py-4 bg-slate-50 hover:bg-slate-100 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl active:scale-95 transition-all"
             >
               {t('common.cancel') || 'Keep It'}
             </button>
@@ -433,8 +433,8 @@ const EditAssetModal = ({ asset, onClose, onSuccess }) => {
               <Edit size={36} strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-3xl font-bold text-slate-900 leading-tight tracking-tight">{t('operator.editMachine')}</h3>
-              <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mt-1">{t('operator.refining')}: {asset.name}</p>
+              <h3 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter">{t('operator.editMachine')}</h3>
+              <p className="text-[10px] text-green-600 font-black uppercase tracking-[0.2em] mt-1">{t('operator.refining')}: {asset.name}</p>
             </div>
           </div>
 

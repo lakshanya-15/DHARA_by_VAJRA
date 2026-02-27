@@ -4,7 +4,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const userService = require('../services/userService');
-const engagementService = require('../services/engagementService');
 const { success, error } = require('../utils/response');
 const { required, oneOf } = require('../utils/validation');
 
@@ -50,10 +49,6 @@ async function login(req, res, next) {
       config.jwt.secret,
       { expiresIn: config.jwt.expiresIn }
     );
-
-    // Track login engagement
-    await engagementService.trackEngagement(user.id, 'LOGIN');
-
     return success(res, {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       token,

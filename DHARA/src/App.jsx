@@ -15,13 +15,13 @@ import Assets from './pages/farmer/Assets';
 import Bookings from './pages/farmer/Bookings';
 import FarmerDashboard from './pages/farmer/Dashboard';
 import FarmerCalendar from './pages/farmer/Calendar';
-import AssetDetail from './pages/farmer/AssetDetail';
 
 import OperatorDashboard from './pages/operator/Dashboard';
 import AddAsset from './pages/operator/AddAsset';
 import MyAssets from './pages/operator/MyAssets';
 import OperatorAnalytics from './pages/operator/Analytics';
 import MaintenanceLogs from './pages/operator/MaintenanceLogs';
+import DamageScanner from './components/Common/DamageScanner';
 
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -52,7 +52,6 @@ function App() {
               <Route path="/farmer/assets" element={<Assets />} />
               <Route path="/farmer/bookings" element={<Bookings />} />
               <Route path="/farmer/calendar" element={<FarmerCalendar />} />
-              <Route path="/farmer/asset/:id" element={<AssetDetail />} />
             </Route>
 
             {/* Operator Routes */}
@@ -69,7 +68,8 @@ function App() {
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
             </Route>
 
-            {/* Universal AI Features removed */}
+            {/* Universal AI Features */}
+            <Route path="/scan/:id" element={<DamageScanner />} />
 
           </Route>
 

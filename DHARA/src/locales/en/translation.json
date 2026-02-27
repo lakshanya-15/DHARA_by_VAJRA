@@ -18,8 +18,7 @@
         "myAssets": "My Assets",
         "addAsset": "Add Asset",
         "maintenance": "Maintenance",
-        "myBookings": "My Bookings",
-        "marketplace": "Marketplace"
+        "myBookings": "My Bookings"
     },
     "login": {
         "title": "Welcome Back",

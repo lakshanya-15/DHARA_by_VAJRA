@@ -5,19 +5,6 @@ const assetService = require('../services/assetService');
 const { success, error } = require('../utils/response');
 const { required } = require('../utils/validation');
 
-async function uploadImages(req, res, next) {
-  try {
-    if (!req.files || req.files.length === 0) {
-      return error(res, 'No images provided', 400);
-    }
-    // multer-storage-cloudinary attaches the secure_url to the path property
-    const imageUrls = req.files.map(file => file.path);
-    return success(res, { images: imageUrls }, 200);
-  } catch (e) {
-    next(e);
-  }
-}
-
 async function create(req, res, next) {
   try {
     const err = required(req.body, ['name', 'hourlyRate']);
@@ -25,12 +12,11 @@ async function create(req, res, next) {
 
     const asset = await assetService.createAsset({
       operatorId: req.user.id,
-      name: String(req.body.name),
+      name: String(req.body.name || '').trim(),
       type: req.body.type,
       category: req.body.category,
       description: req.body.description,
       hourlyRate: req.body.hourlyRate,
-      images: req.body.images || [], // Save images directly
     });
     return success(res, asset, 201);
   } catch (e) {
@@ -85,4 +71,4 @@ async function remove(req, res, next) {
   }
 }
 
-module.exports = { create, list, update, remove, uploadImages };
+module.exports = { create, list, update, remove };

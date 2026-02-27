@@ -1,6 +1,5 @@
 const prisma = require('../config/prisma');
 const notificationService = require('./notificationService');
-const scoringService = require('./scoringService');
 
 function toApiBooking(booking) {
   if (!booking) return null;
@@ -76,14 +75,6 @@ async function createBooking({ farmerId, assetId, startDate, bookingTime, endDat
     });
   }
 
-  // Update farmer score
-  await scoringService.updateUserScore(farmerId);
-
-  // Update operator score
-  if (booking.Asset?.ownerid) {
-    await scoringService.updateUserScore(booking.Asset.ownerid);
-  }
-
   return toApiBooking(booking);
 }
 
@@ -108,7 +99,7 @@ async function refreshBookingStatuses() {
       status: 'BOOKED',
       bookingdate: { lt: today }
     },
-    select: { id: true, assetid: true, farmerid: true }
+    select: { id: true, assetid: true }
   });
 
   if (expiredBookings.length > 0) {
@@ -125,24 +116,6 @@ async function refreshBookingStatuses() {
       where: { id: { in: assetIds } },
       data: { availability: true }
     });
-
-    // Update scores for all farmers and operators involved
-    const farmerIds = [...new Set(expiredBookings.map(b => b.farmerid))];
-    const assetIdsForOwners = [...new Set(expiredBookings.map(b => b.assetid))];
-
-    for (const farmerId of farmerIds) {
-      if (farmerId) await scoringService.updateUserScore(farmerId);
-    }
-
-    // Get owners of these assets to update their scores
-    const assetsWithOwners = await prisma.asset.findMany({
-      where: { id: { in: assetIdsForOwners } },
-      select: { ownerid: true }
-    });
-    const ownerIds = [...new Set(assetsWithOwners.map(a => a.ownerid))];
-    for (const ownerId of ownerIds) {
-      if (ownerId) await scoringService.updateUserScore(ownerId);
-    }
 
     console.log(`Auto-completed ${expiredBookings.length} expired bookings.`);
   }
@@ -179,62 +152,6 @@ async function listAllForAdmin() {
   return bookings.map(toApiBooking);
 }
 
-async function updateBooking(id, { startDate, bookingTime, notes }) {
-  const bookingDate = new Date(startDate);
-  bookingDate.setHours(0, 0, 0, 0);
-
-  const updated = await prisma.booking.update({
-    where: { id },
-    data: {
-      bookingdate: bookingDate,
-      bookingTime,
-    },
-    include: {
-      Asset: { include: { User: true } },
-      User: true,
-    }
-  });
-
-  return toApiBooking(updated);
-}
-
-async function cancelBooking(id) {
-  const booking = await prisma.booking.update({
-    where: { id },
-    data: { status: 'CANCELLED' },
-    include: { Asset: true }
-  });
-
-  // Restore asset availability
-  if (booking.assetid) {
-    await prisma.asset.update({
-      where: { id: booking.assetid },
-      data: { availability: true }
-    });
-  }
-
-  // Notify operator
-  if (booking.Asset?.ownerid) {
-    await notificationService.createNotification({
-      userId: booking.Asset.ownerid,
-      message: `Booking for ${booking.Asset.name} has been CANCELLED.`,
-      type: 'NOTIFICATION',
-    });
-  }
-
-  // Update farmer score
-  if (booking.farmerid) {
-    await scoringService.updateUserScore(booking.farmerid);
-  }
-
-  // Update operator score
-  if (booking.Asset?.ownerid) {
-    await scoringService.updateUserScore(booking.Asset.ownerid);
-  }
-
-  return toApiBooking(booking);
-}
-
 module.exports = {
   createBooking,
   findById,
@@ -242,6 +159,4 @@ module.exports = {
   listByOperator,
   listAllForAdmin,
   refreshBookingStatuses,
-  updateBooking,
-  cancelBooking,
 };

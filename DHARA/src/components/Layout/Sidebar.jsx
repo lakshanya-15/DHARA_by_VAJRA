@@ -10,8 +10,7 @@ import {
   X,
   TrendingUp,
   Wrench,
-  ClipboardList,
-  ShoppingBag
+  ClipboardList
 } from 'lucide-react';
 import { useState, isValidElement, cloneElement } from 'react';
 
@@ -35,7 +34,6 @@ const Sidebar = () => {
       case 'farmer':
         return [
           { name: t('sidebar.dashboard'), path: '/farmer/dashboard', icon: <LayoutDashboard /> },
-          { name: t('sidebar.marketplace'), path: '/farmer/assets', icon: <ShoppingBag /> },
           { name: t('sidebar.myBookings'), path: '/farmer/bookings', icon: <ClipboardList /> },
           { name: t('sidebar.calendar'), path: '/farmer/calendar', icon: <Calendar /> },
         ];

@@ -23,36 +23,25 @@ const COLORS = ['#16a34a', '#2563eb', '#9333ea', '#ea580c'];
 const OperatorAnalytics = () => {
     const { t } = useTranslation();
     const stats = [
-        { name: t('operator.revenue'), value: '₹45,800', icon: IndianRupee, trend: '+12.5%' },
-        { name: t('operator.activeBookings'), value: '24', icon: Calendar, trend: '+8%' },
-        { name: t('operator.newCustomers') || 'New Customers', value: '12', icon: Users, trend: '+15%' },
-        { name: t('operator.utilizationRate') || 'Utilization Rate', value: '78%', icon: TrendingUp, trend: '+5%' },
+        { name: t('operator.revenue'), value: '₹45,800', icon: <IndianRupee className="text-green-600" />, trend: '+12.5%' },
+        { name: t('operator.activeBookings'), value: '24', icon: <Calendar className="text-blue-600" />, trend: '+8%' },
+        { name: t('operator.newCustomers') || 'New Customers', value: '12', icon: <Users className="text-purple-600" />, trend: '+15%' },
+        { name: t('operator.utilizationRate') || 'Utilization Rate', value: '78%', icon: <TrendingUp className="text-orange-600" />, trend: '+5%' },
     ];
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center mb-10 pt-4">
-                <h2 className="text-3xl font-black text-slate-800">{t('operator.growthAnalytics')}</h2>
-                <div className="flex gap-4">
-                    <select className="bg-white border-2 border-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-3 outline-none hover:border-slate-200 transition-colors cursor-pointer">
-                        <option>Last 7 Days</option>
-                        <option>Last 30 Days</option>
-                        <option>This Year</option>
-                    </select>
-                </div>
-            </div>
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight">{t('operator.growthAnalytics')}</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                {stats.map((stat, idx) => (
-                    <div key={idx} className="bg-white border-2 border-slate-100 rounded-[2rem] p-8 hover:border-green-100 hover:shadow-2xl hover:shadow-green-50/50 transition-all group">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-green-50 group-hover:scale-110 transition-all duration-300">
-                                <stat.icon size={24} strokeWidth={2.5} className="text-slate-400 group-hover:text-green-600 transition-colors" />
-                            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat) => (
+                    <div key={stat.name} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 bg-slate-50 rounded-xl">{stat.icon}</div>
                             <span className="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">{stat.trend}</span>
                         </div>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{stat.name}</p>
-                        <h4 className="text-2xl font-black text-slate-900 mt-1">{stat.value}</h4>
+                        <h4 className="text-2xl font-black text-slate-900 mt-1 tracking-tighter">{stat.value}</h4>
                     </div>
                 ))}
             </div>

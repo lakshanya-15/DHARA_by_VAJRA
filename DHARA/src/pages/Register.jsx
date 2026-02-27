@@ -48,7 +48,7 @@ const Register = () => {
         <div className="p-1.5 bg-slate-50 group-hover:bg-green-50 rounded-lg transition-colors">
           <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-0.5 transition-transform" />
         </div>
-        <span className="text-sm font-medium">{t('landing.howItWorks.step1Desc') ? 'Go Back' : 'Go Back'}</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('landing.howItWorks.step1Desc') ? 'Go Back' : 'Go Back'}</span>
       </button>
 
       <div className="relative z-10 max-w-lg w-full animate-fade-up">
@@ -60,29 +60,29 @@ const Register = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-[1.5rem] bg-green-50 mb-6 shadow-sm border border-green-100">
               <UserPlus className="w-10 h-10 text-green-600" strokeWidth={3} />
             </div>
-            <h2 className="text-4xl font-black text-slate-800">{t('register.title')}</h2>
-            <p className="text-slate-500 text-sm mt-2">{t('register.subtitle')}</p>
+            <h2 className="text-4xl font-black text-slate-800 tracking-tighter">{t('register.title')}</h2>
+            <p className="text-green-600 font-black uppercase tracking-[0.3em] text-[10px] mt-3">{t('register.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm font-medium text-center animate-shake">
+              <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center animate-shake">
                 {error}
               </div>
             )}
 
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-700 px-1">{t('register.accountType')}</label>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 px-2">{t('register.accountType')}</label>
+              <div className="grid grid-cols-2 gap-4">
                 {['FARMER', 'OPERATOR'].map((r) => (
                   <button
                     key={r}
                     type="button"
                     onClick={() => setRole(r)}
-                    className={`py-3 px-4 text-sm font-semibold rounded-xl transition-all relative overflow-hidden group/role
+                    className={`py-4 px-6 text-[10px] font-black rounded-2xl uppercase tracking-[0.2em] transition-all relative overflow-hidden group/role
                       ${role === r
-                        ? 'bg-green-600 text-white shadow-md shadow-green-600/20 border-transparent'
-                        : 'bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300'}`}
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-600/20'
+                        : 'bg-slate-50 text-slate-400 border border-slate-100 hover:border-slate-200'}`}
                   >
                     {r === 'FARMER' ? t('common.farmer') : t('common.operator')}
                     {role === r && <div className="absolute inset-0 bg-white/20 animate-pulse"></div>}
@@ -91,54 +91,54 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="group/input space-y-1.5 relative">
-              <label className="block text-sm font-medium text-slate-700 px-1 group-focus-within/input:text-green-600 transition-colors">{t('register.fullName')}</label>
+            <div className="group/input relative">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">{t('register.fullName')}</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 transition-all placeholder:text-slate-400"
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300"
                 placeholder="Ex. Arjun Patel"
               />
             </div>
 
-            <div className="group/input space-y-1.5 relative">
-              <label className="block text-sm font-medium text-slate-700 px-1 group-focus-within/input:text-green-600 transition-colors">{t('register.email')}</label>
+            <div className="group/input relative">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">{t('register.email')}</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 transition-all placeholder:text-slate-400"
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300"
                 placeholder="connect@dhara.com"
               />
             </div>
 
-            <div className="group/input space-y-1.5 relative">
-              <label className="block text-sm font-medium text-slate-700 px-1 group-focus-within/input:text-green-600 transition-colors">{t('register.password')}</label>
+            <div className="group/input relative">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-2 group-focus-within/input:text-green-600 transition-colors">{t('register.password')}</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 transition-all placeholder:text-slate-400"
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-green-500/20 focus:border-green-600 outline-none text-slate-900 font-bold transition-all placeholder:text-slate-300"
                 placeholder="••••••••"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-green-600/20 active:scale-95 text-base mt-6"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-600/20 active:scale-95 btn-premium uppercase tracking-[0.3em] text-xs mt-4"
             >
               {t('register.initialize')}
             </button>
           </form>
 
-          <div className="mt-8 text-center relative z-10">
-            <p className="text-slate-500 text-sm">
+          <div className="mt-10 text-center relative z-10">
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
               {t('register.hasAccount')}{' '}
-              <Link to="/login" className="text-green-600 hover:text-green-700 font-medium hover:underline underline-offset-4 decoration-2">
+              <Link to="/login" className="text-green-600 hover:text-green-700 underline underline-offset-4 decoration-2">
                 {t('register.secureLogin')}
               </Link>
             </p>
@@ -147,10 +147,10 @@ const Register = () => {
 
         {/* Brand Footer */}
         <div className="mt-8 text-center animate-fade-in delay-500">
-          <p className="text-white/50 text-xs font-medium flex items-center justify-center gap-3">
-            <span className="w-8 h-px bg-white/20"></span>
+          <p className="text-slate-300 text-[9px] font-black uppercase tracking-[0.5em] flex items-center justify-center gap-3">
+            <span className="w-8 h-px bg-slate-100"></span>
             DHARA Digital Protocol
-            <span className="w-8 h-px bg-white/20"></span>
+            <span className="w-8 h-px bg-slate-100"></span>
           </p>
         </div>
       </div>

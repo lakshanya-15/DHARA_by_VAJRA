@@ -14,7 +14,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('rural_uber_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token} `;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -31,24 +31,19 @@ export const authAPI = {
 export const assetsAPI = {
   getAll: (params) => api.get('/assets', { params }),
   create: (assetData) => api.post('/assets', assetData),
-  getById: (id) => api.get(`/ assets / ${id} `),
-  update: (id, data) => api.patch(`/ assets / ${id} `, data),
-  delete: (id) => api.delete(`/ assets / ${id} `),
-  uploadImages: (formData) => api.post('/assets/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  getById: (id) => api.get(`/assets/${id}`),
+  update: (id, data) => api.patch(`/assets/${id}`, data),
+  delete: (id) => api.delete(`/assets/${id}`),
 };
 
 export const bookingsAPI = {
   create: (bookingData) => api.post('/bookings', bookingData),
   getMyBookings: () => api.get('/bookings/my'),
-  update: (id, data) => api.patch(`/bookings/${id}`, data),
-  cancel: (id) => api.patch(`/bookings/${id}/cancel`),
 };
 
 export const notificationsAPI = {
   getAll: () => api.get('/notifications'),
-  markAsRead: (id) => api.patch(`/ notifications / ${id}/read`),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
 };
 
 export const maintenanceAPI = {
@@ -56,7 +51,5 @@ export const maintenanceAPI = {
   create: (data) => api.post('/maintenance', data),
   delete: (id) => api.delete(`/maintenance/${id}`),
 };
-
-// damageAPI removed
 
 export default api;

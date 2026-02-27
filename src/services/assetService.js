@@ -12,26 +12,24 @@ function toApiAsset(asset) {
     operatorId: asset.ownerid,
     name: asset.name,
     type: asset.type,
-    description: '', // not in dharaa schema yet
+    description: '', // not in dharaa schema
     category: asset.category,
     hourlyRate: Number(asset.priceperday) || 0,
     availability: asset.availability ?? true,
-    images: asset.images || [], // Include images array
     location: asset.User ? `${asset.User.village || ''}, ${asset.User.district || ''}`.replace(/^, |, $/, '') : 'Local Area',
     createdAt: asset.createdat?.toISOString?.() ?? asset.createdat,
   };
 }
 
-async function createAsset({ operatorId, name, type, category, description, hourlyRate, images }) {
+async function createAsset({ operatorId, name, type, category, description, hourlyRate }) {
   const asset = await prisma.asset.create({
     data: {
       ownerid: operatorId,
       name,
-      type: type || 'MACHINERY', // Changed from 'Tractor' in instruction to keep original default
+      type: type || 'MACHINERY',
       category: category || 'OTHER',
       priceperday: Number(hourlyRate) || 0,
       availability: true,
-      images: images || [], // Save images array
     },
     include: { User: true }
   });
@@ -57,12 +55,7 @@ async function listAll(filters = {}) {
   if (filters.category) where.category = filters.category;
   const assets = await prisma.asset.findMany({
     where,
-    include: { User: true, Booking: true },
-    orderBy: {
-      User: {
-        behaviorScore: 'desc'
-      }
-    }
+    include: { User: true, Booking: true }
   });
   return assets.map(toApiAsset);
 }
@@ -81,7 +74,6 @@ async function updateAsset(id, data) {
   if (data.category) updateData.category = data.category;
   if (data.hourlyRate !== undefined) updateData.priceperday = Number(data.hourlyRate);
   if (data.availability !== undefined) updateData.availability = data.availability;
-  if (data.images !== undefined) updateData.images = data.images;
 
   const asset = await prisma.asset.update({
     where: { id },
