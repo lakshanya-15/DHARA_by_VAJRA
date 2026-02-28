@@ -43,7 +43,7 @@ export const bookingsAPI = {
   create: (bookingData) => api.post('/bookings', bookingData),
   getMyBookings: () => api.get('/bookings/my'),
   cancel: (id) => api.patch(`/bookings/${id}/cancel`),
-  updateStatus: (id, status) => api.patch(`/bookings/${id}/status`, { status }),
+  updateStatus: (id, status, hoursUsed) => api.patch(`/bookings/${id}/status`, { status, hoursUsed }),
 };
 
 export const walletAPI = {

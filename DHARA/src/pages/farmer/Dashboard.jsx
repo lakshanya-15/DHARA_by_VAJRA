@@ -286,8 +286,8 @@ const FarmerDashboard = () => {
                                                         <Activity size={12} className="text-blue-500" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Utilization</p>
-                                                        <p className="text-[10px] font-black text-slate-800 tracking-tight">Medium</p>
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Usage</p>
+                                                        <p className="text-[10px] font-black text-slate-800 tracking-tight">{asset.totalHoursUsed} hours logged</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -480,6 +480,8 @@ const BookingModal = ({ asset, walletBalance, onClose, onSuccess }) => {
     const { user } = useAuth();
     const isBalanceInsufficient = walletBalance < asset.hourlyRate;
 
+    const [bookingDetails, setBookingDetails] = useState(null);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -492,13 +494,15 @@ const BookingModal = ({ asset, walletBalance, onClose, onSuccess }) => {
         }
 
         try {
-            await bookingsAPI.create({
+            const res = await bookingsAPI.create({
                 assetId: asset.id,
                 startDate: date,
                 bookingTime: time
             });
+            setBookingDetails(res.data.data);
             setIsSuccess(true);
-            setTimeout(() => onSuccess(), 1500); // Small delay to let success state show
+            // Delay increased to give time to read the details
+            setTimeout(() => onSuccess(), 4000);
         } catch (err) {
             setError(err.response?.data?.error || t('farmer.reserveMachineModal.bookingFailed'));
         } finally {
@@ -508,17 +512,38 @@ const BookingModal = ({ asset, walletBalance, onClose, onSuccess }) => {
 
     if (isSuccess) {
         return (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in relative z-[100]">
                 <div className="glass-card rounded-[3rem] max-w-sm w-full p-12 text-center animate-scale-up shadow-[0_40px_80px_rgba(0,0,0,0.3)] border-white/40">
                     <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-green-700 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-green-600/30 animate-pulse-glow">
                         <CheckCircle className="w-12 h-12 text-white" strokeWidth={3} />
                     </div>
                     <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter">{t('farmer.reserveMachineModal.successTitle')}</h3>
-                    <p className="text-slate-500 font-bold mb-10 leading-relaxed uppercase tracking-tighter">
+                    <p className="text-slate-500 font-bold mb-6 leading-relaxed uppercase tracking-tighter">
                         {t('farmer.reserveMachineModal.successText')}
                     </p>
+
+                    {bookingDetails && (
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mb-8 text-left space-y-3 shadow-inner">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-2">Operator Details</p>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-green-100 rounded-lg text-green-600"><Phone size={14} /></div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phone Number</p>
+                                    <p className="text-sm font-black text-slate-800">{bookingDetails.Asset?.operatorPhone || 'Not provided'}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><MapPin size={14} /></div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</p>
+                                    <p className="text-sm font-black text-slate-800">{bookingDetails.Asset?.operatorAddress || bookingDetails.Asset?.location || 'Not provided'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden shadow-inner">
-                        <div className="bg-green-600 h-full animate-progress-fast shadow-[0_0_15px_rgba(22,163,74,0.5)]"></div>
+                        <div className="bg-green-600 h-full overflow-hidden shadow-[0_0_15px_rgba(22,163,74,0.5)]" style={{ animation: "progress 4s linear" }}></div>
                     </div>
                 </div>
             </div>

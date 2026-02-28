@@ -50,8 +50,8 @@ async function getMy(req, res, next) {
 
 async function updateStatus(req, res, next) {
   try {
-    const { status } = req.body;
-    const booking = await bookingService.updateJobStatus(req.params.id, status, req.user.id);
+    const { status, hoursUsed } = req.body;
+    const booking = await bookingService.updateJobStatus(req.params.id, status, req.user.id, hoursUsed);
     return success(res, booking);
   } catch (e) {
     next(e);

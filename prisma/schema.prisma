@@ -20,6 +20,7 @@ model Asset {
   ownerid            String           @db.Uuid
   maintenanceDueDate DateTime?        @db.Date
   attachments        Json?            @default("[]")
+  totalHoursUsed     Decimal?         @default(0) @db.Decimal(10, 2)
   createdat          DateTime?        @default(now()) @db.Timestamp(6)
   User               User             @relation(fields: [ownerid], references: [id], onUpdate: NoAction, map: "fk_asset_owner")
   Booking            Booking[]
@@ -52,6 +53,7 @@ model Booking {
   bookingdate DateTime       @db.Date
   bookingTime String?        // Start time (e.g., "10:30 AM")
   status      booking_status
+  hoursUsed   Decimal?       @db.Decimal(10, 2)
   farmerid          String         @db.Uuid
   assetid           String         @db.Uuid
   createdat         DateTime?      @default(now()) @db.Timestamp(6)

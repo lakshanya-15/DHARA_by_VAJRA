@@ -100,9 +100,12 @@ async function createBooking({ farmerId, assetId, startDate, bookingTime, endDat
 
   // Notify operator
   if (booking.Asset?.ownerid) {
+    const farmerName = booking.User?.name || 'a farmer';
+    const farmerPhone = booking.User?.phone || 'No phone';
+    const farmerAddress = booking.User?.address || booking.User?.village || 'No address';
     await notificationService.createNotification({
       userId: booking.Asset.ownerid,
-      message: `Confirmed booking for ${booking.Asset.name} from ${booking.User?.name || 'a farmer'} on ${startDate}. Payment is in Escrow.`,
+      message: `Confirmed booking for ${booking.Asset.name} from ${farmerName} on ${startDate}. Contact: ${farmerPhone}, ${farmerAddress}. Payment is in Escrow.`,
       type: 'BOOKING',
     });
   }
@@ -295,7 +298,7 @@ async function listAllForAdmin() {
   return bookings.map(toApiBooking);
 }
 
-async function updateJobStatus(id, newStatus, userId) {
+async function updateJobStatus(id, newStatus, userId, hoursUsed = null) {
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: { Asset: true }
@@ -322,6 +325,32 @@ async function updateJobStatus(id, newStatus, userId) {
     // Release funds from escrow to operator
     await paymentService.releaseFunds(id);
 
+    // If hours were logged, process the extra charge since escrow was only for 1 hour
+    if (hoursUsed && Number(hoursUsed) > 1) {
+      const payment = await prisma.payment.findFirst({ where: { bookingId: id } });
+      if (payment) {
+        const extraAmount = Number(payment.amount) * (Number(hoursUsed) - 1);
+
+        // Deduct from farmer for extra hours
+        await prisma.user.update({
+          where: { id: booking.farmerid },
+          data: { walletBalance: { decrement: extraAmount } }
+        });
+        await prisma.transaction.create({
+          data: { userId: booking.farmerid, amount: -extraAmount, type: 'DEDUCTION', description: `Extra hours (${Number(hoursUsed) - 1}) for booking: ${booking.Asset.name}` }
+        });
+
+        // Credit operator for extra hours
+        await prisma.user.update({
+          where: { id: booking.Asset.ownerid },
+          data: { walletBalance: { increment: extraAmount } }
+        });
+        await prisma.transaction.create({
+          data: { userId: booking.Asset.ownerid, amount: extraAmount, type: 'EARNING', description: `Extra hours (${Number(hoursUsed) - 1}) for booking: ${booking.Asset.name}` }
+        });
+      }
+    }
+
     // Update scores
     await prisma.user.update({ where: { id: booking.farmerid }, data: { completedBookings: { increment: 1 } } });
     await prisma.user.update({ where: { id: booking.Asset.ownerid }, data: { completedBookings: { increment: 1 } } });
@@ -329,9 +358,19 @@ async function updateJobStatus(id, newStatus, userId) {
     await updateUserScore(booking.Asset.ownerid);
   }
 
+  const updateData = { status: newStatus };
+  if (newStatus === 'COMPLETED' && hoursUsed) {
+    updateData.hoursUsed = Number(hoursUsed);
+    // Update the lifetime hours used on the machine
+    await prisma.asset.update({
+      where: { id: booking.assetid },
+      data: { totalHoursUsed: { increment: Number(hoursUsed) } }
+    });
+  }
+
   const updated = await prisma.booking.update({
     where: { id },
-    data: { status: newStatus },
+    data: updateData,
     include: { Asset: { include: { User: true } }, User: true }
   });
 

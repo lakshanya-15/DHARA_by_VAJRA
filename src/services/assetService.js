@@ -26,7 +26,8 @@ function toApiAsset(asset, userSegment = 'NEW') {
     location: asset.User ? `${asset.User.village || ''}, ${asset.User.district || ''}`.replace(/^, |, $/, '') : 'Local Area',
     createdAt: asset.createdat?.toISOString?.() ?? asset.createdat,
     operatorSegment: asset.User ? asset.User.segment : 'NEW',
-    operatorScore: asset.User ? asset.User.behaviorScore : 0
+    operatorScore: asset.User ? asset.User.behaviorScore : 0,
+    totalHoursUsed: Number(asset.totalHoursUsed) || 0
   };
 }
 

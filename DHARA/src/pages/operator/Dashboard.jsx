@@ -74,9 +74,9 @@ const OperatorDashboard = () => {
     }
   };
 
-  const handleUpdateStatus = async (id, status, verificationToken = null) => {
+  const handleUpdateStatus = async (id, status, hoursUsed = null) => {
     try {
-      await bookingsAPI.updateStatus(id, status, verificationToken);
+      await bookingsAPI.updateStatus(id, status, hoursUsed);
       fetchData();
     } catch (err) {
       console.error("Update status error", err);
@@ -192,6 +192,7 @@ const OperatorDashboard = () => {
                         <div>
                           <h4 className="text-lg font-black text-slate-800 tracking-tight mb-1">{asset.name}</h4>
                           <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[8px] font-black rounded-lg uppercase tracking-widest">{asset.type}</span>
+                          <span className="ml-2 px-2.5 py-1 bg-blue-50 text-blue-600 text-[8px] font-black rounded-lg uppercase tracking-widest">{asset.totalHoursUsed || 0} hrs logged</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-8">
@@ -265,8 +266,13 @@ const OperatorDashboard = () => {
                             )}
                             {booking.status === 'IN_PROGRESS' && (
                               <button onClick={() => {
-                                if (window.confirm("Finish job and release payment?")) {
-                                  handleUpdateStatus(booking.id, 'COMPLETED');
+                                const hours = window.prompt("How many hours was the machine used?");
+                                if (hours && !isNaN(hours) && Number(hours) > 0) {
+                                  if (window.confirm(`Confirm the machine was used for ${hours} hours? This will finalize the payment.`)) {
+                                    handleUpdateStatus(booking.id, 'COMPLETED', parseFloat(hours));
+                                  }
+                                } else if (hours !== null) {
+                                  alert("Please enter a valid number of hours.");
                                 }
                               }} className="px-4 py-2 bg-green-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition-all">Complete Job</button>
                             )}
