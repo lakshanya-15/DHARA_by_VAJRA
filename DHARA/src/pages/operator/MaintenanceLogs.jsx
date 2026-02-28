@@ -123,7 +123,7 @@ const MaintenanceLogs = () => {
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.machineIdentity')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('farmer.reserveMachineModal.selectedDate')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.serviceType')}</th>
-                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.revenue')}</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('operator.expenditure')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('common.notes')}</th>
                                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">{t('common.actions') || 'Actions'}</th>
                             </tr>
@@ -242,7 +242,7 @@ const MaintenanceLogs = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.revenue')}</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('operator.expenditure')}</label>
                                     <div className="relative">
                                         <IndianRupee size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input
