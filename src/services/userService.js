@@ -26,6 +26,7 @@ async function createUser({ phone, password, name, role, address }) {
       name: name || phone,
       address: address || '',
       role: (role || 'FARMER').toUpperCase(),
+      walletBalance: 100000,
     },
   });
   return { id: user.id, phone: user.phone, name: user.name, role: user.role };
